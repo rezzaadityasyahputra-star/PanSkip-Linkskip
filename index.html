@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanReacth - WhatsApp Channel Reaction Controller</title>
+    
+    <link rel="icon" id="fav-icon" href="https://img.icons8.com/fluent/96/000000/lightning-bolt.png" type="image/png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #0d1527 0%, #05070f 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .font-space {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(13, 20, 38, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+        /* Glow Effects */
+        .glow-green {
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+        }
+        .glow-btn:active {
+            transform: scale(0.95);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05070f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #22c55e;
+        }
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-notification {
+            animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased selection:bg-green-500/30 selection:text-green-400">
+
+    <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 sm:px-0"></div>
+
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <header class="border-b border-white/5 College sticky top-0 z-40 bg(#05070f/80) backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-400 p-[1px] shadow-lg shadow-emerald-500/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <div class="w-full h-full bg-[#090d1a] rounded-xl flex items-center justify-center">
+                        <img id="main-logo" src="https://img.icons8.com/fluent/96/000000/lightning-bolt.png" alt="Logo" class="w-6 h-6 object-contain">
+                    </div>
+                </div>
+                <span class="font-space text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                    Pan<span class="text-emerald-400">Reacth</span>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
+        <div class="text-center mb-12 animate-fade-in" style="animation-delay: 0.1s;">
+            <h1 class="font-space text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                WhatsApp Channel <br class="sm:hidden">
+                <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Spam Reaction Controller</span>
+            </h1>
+            <p class="text-slate-400 max-w-lg mx-auto text-sm md:text-base">
+                Kirim reaksi emoji secara massal ke saluran WhatsApp secara instan dengan sistem kustomisasi penuh premium.
+            </p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-6 md:p-10 animate-fade-in" style="animation-delay: 0.2s;">
+            <form id="react-form" class="space-y-6">
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-link text-emerald-400"></i> URL Postingan Saluran
+                    </label>
+                    <div class="relative group">
+                        <input type="url" id="channel-url" required
+                            placeholder="https://whatsapp.com/channel/xxxx/175" 
+                            class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-5 py-4 pl-12 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all duration-300">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Pastikan menyertakan ID postingan di bagian akhir url (Contoh: /175)</p>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <i class="fa-regular fa-face-smile text-emerald-400"></i> Kustom Emoji / Spam
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="custom-emoji" value="🍍" required
+                            placeholder="Contoh: 🔥 atau 🍍,👍,❤️" 
+                            class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all duration-300 text-lg">
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit"
+                    class="glow-btn w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-space font-bold text-base py-4 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:shadow-emerald-500/35 hover:-translate-y-[2px] flex items-center justify-center gap-2 mt-4 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Reaksi Sekarang
+                </button>
+            </form>
+
+            <div id="result-box" class="mt-8 hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-cyan-400"></i> Server Response
+                    </span>
+                    <span id="status-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space"></span>
+                </div>
+                <div class="bg-slate-950 border border-white/5 rounded-2xl p-5 font-mono text-xs sm:text-sm overflow-x-auto relative group">
+                    <pre id="json-output" class="text-emerald-400"></pre>
+                    <button onclick="copyResponse()" class="absolute top-3 right-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white p-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-600 text-xs border-t border-white/5 mt-auto">
+        <p>&copy; 2026 <span class="font-space font-bold text-slate-500">PanReacth</span>. Powered By Reza sukses</p>
+    </footer>
+
+    <script>
+        // Sinkronisasi link logo paling atas ke elemen UI
+        const favIconLink = document.getElementById('fav-icon').href;
+        document.getElementById('main-logo').src = favIconLink;
+
+        const form = document.getElementById('react-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const resultBox = document.getElementById('result-box');
+        const jsonOutput = document.getElementById('json-output');
+        const statusBadge = document.getElementById('status-badge');
+
+        // AUTOMATIC API KEY CONFIGURATION
+        const AUTOMATIC_API_KEY = "nanasfree";
+
+        // CUSTOM NOTIFICATION SYSTEM (Bukan bawaan browser)
+        function showNotification(type, title, message) {
+            const container = document.getElementById('notification-container');
+            const notif = document.createElement('div');
+            
+            let bgGradient = 'from-slate-900 to-slate-950 border-white/10';
+            let icon = 'fa-circle-info text-blue-400';
+            if(type === 'success') {
+                bgGradient = 'from-emerald-950/90 to-slate-950 border-emerald-500/30';
+                icon = 'fa-circle-check text-emerald-400';
+            } else if (type === 'error') {
+                bgGradient = 'from-rose-950/90 to-slate-950 border-rose-500/30';
+                icon = 'fa-circle-exclamation text-rose-400';
+            }
+
+            notif.className = `animate-notification bg-gradient-to-r ${bgGradient} border p-4 rounded-2xl shadow-2xl flex items-start gap-3 w-full`;
+            notif.innerHTML = `
+                <div class="text-lg mt-0.5">${`<i class="fa-solid ${icon}"></i>`}</div>
+                <div class="flex-1">
+                    <h4 class="text-sm font-bold text-slate-200 font-space">${title}</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">${message}</p>
+                </div>
+                <button class="text-slate-500 hover:text-slate-300 transition-colors text-xs" onclick="this.parentElement.remove()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(notif);
+            
+            // Auto remove setelah 4 detik
+            setTimeout(() => {
+                if(notif) {
+                    notif.style.opacity = '0';
+                    notif.style.transform = 'scale(0.9)';
+                    notif.style.transition = 'all 0.3s ease';
+                    setTimeout(() => notif.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        // FORM SUBMIT HANDLER
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('channel-url').value;
+            const emojis = document.getElementById('custom-emoji').value;
+
+            // Efek Animasi Tombol saat loading
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Memproses Request...`;
+            btnSubmit.classList.add('opacity-80');
+
+            showNotification('info', 'Sistem Berjalan', 'Sedang mengirim instruksi reaksi ke server...');
+
+            try {
+                // Construct URL API Nanzz (Menggunakan AUTOMATIC_API_KEY secara internal)
+                const apiUrl = `https://api-nanzz.my.id/docs/api/tools/react-ch-free.php?url=${encodeURIComponent(url)}&emojis=${encodeURIComponent(emojis)}&apikey=${encodeURIComponent(AUTOMATIC_API_KEY)}`;
+                
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                // Munculkan Kotak Hasil dengan animasi
+                resultBox.classList.remove('hidden');
+                jsonOutput.textContent = JSON.stringify(data, null, 2);
+
+                if (data.status === true || data.message?.toLowerCase().includes('success')) {
+                    statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    statusBadge.innerText = "SUCCESS";
+                    showNotification('success', 'Berhasil!', 'Spam reaksi berhasil diproses ke target.');
+                } else {
+                    statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                    statusBadge.innerText = "FAILED";
+                    showNotification('error', 'Gagal Respons', data.message || 'Gagal mengeksekusi ke WhatsApp.');
+                }
+
+            } catch (error) {
+                resultBox.classList.remove('hidden');
+                jsonOutput.textContent = JSON.stringify({ error: "Koneksi terputus atau API bermasalah", detail: error.message }, null, 2);
+                
+                statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                statusBadge.innerText = "ERROR";
+                
+                showNotification('error', 'Error Sistem', 'Terjadi kesalahan jaringan atau API internal.');
+            } finally {
+                // Kembalikan status tombol
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Reaksi Sekarang`;
+                btnSubmit.classList.remove('opacity-80');
+            }
+        });
+
+        // ACTION COPY TO CLIPBOARD
+        function copyResponse() {
+            const text = document.getElementById('json-output').textContent;
+            navigator.clipboard.writeText(text);
+            showNotification('info', 'Disalin', 'Respons JSON berhasil disalin ke clipboard.');
+        }
+    </script>
+</body>
+</html>
