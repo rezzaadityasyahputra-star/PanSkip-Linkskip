@@ -1,275 +1,267 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PanReacth - WhatsApp Channel Reaction Controller</title>
-    
-    <link rel="icon" id="fav-icon" href="https://img.icons8.com/fluent/96/000000/lightning-bolt.png" type="image/png">
-
+    <title>PanSkip - Premium Link Bypass</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        // ==========================================
+        // CONFIGURATION & LOGO LINK (DI TARUH PALING ATAS)
+        // ==========================================
+        const PANSKIP_LOGO_URL = "https://i.ibb.co.com/21N6fcLQ/image.png";
+        const ADMIN_WHATSAPP_NUMBER = "6283116920767"; // Nomor WhatsApp Admin
 
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    animation: {
+                        'bounce-slow': 'bounce 3s linear infinite',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top right, #0d1527 0%, #05070f 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        .font-space {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        /* Glassmorphism Effect */
-        .glass-card {
-            background: rgba(13, 20, 38, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        }
-        /* Glow Effects */
-        .glow-green {
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
-        }
-        .glow-btn:active {
-            transform: scale(0.95);
-        }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #05070f;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #22c55e;
-        }
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-        @keyframes slideIn {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .animate-notification {
-            animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+        * { transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease; }
+        .glass { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .dark .glass { background: rgba(15, 23, 42, 0.5); }
     </style>
 </head>
-<body class="text-slate-200 antialiased selection:bg-green-500/30 selection:text-green-400">
+<body class="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-zinc-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
 
-    <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full px-4 sm:px-0"></div>
+    <header class="w-full fixed top-0 left-0 z-40 px-6 py-4 flex items-center justify-between">
+        <button id="menuBtn" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-md hover:scale-110 active:scale-95 text-xl relative z-50">
+            <i class="fa-solid fa-ellipsis-vertical text-emerald-500 transition-transform duration-300"></i>
+        </button>
 
-    <div class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-    <header class="border-b border-white/5 College sticky top-0 z-40 bg(#05070f/80) backdrop-blur-md">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3 group cursor-pointer">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-400 p-[1px] shadow-lg shadow-emerald-500/20 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <div class="w-full h-full bg-[#090d1a] rounded-xl flex items-center justify-center">
-                        <img id="main-logo" src="https://img.icons8.com/fluent/96/000000/lightning-bolt.png" alt="Logo" class="w-6 h-6 object-contain">
-                    </div>
-                </div>
-                <span class="font-space text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                    Pan<span class="text-emerald-400">Reacth</span>
-                </span>
-            </div>
+        <div class="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold tracking-wider uppercase">
+            <span class="text-emerald-500">Pan</span><span class="text-slate-700 dark:text-white">Skip</span>
         </div>
+        <div class="w-10"></div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
-        <div class="text-center mb-12 animate-fade-in" style="animation-delay: 0.1s;">
-            <h1 class="font-space text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                WhatsApp Channel <br class="sm:hidden">
-                <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Spam Reaction Controller</span>
-            </h1>
-            <p class="text-slate-400 max-w-lg mx-auto text-sm md:text-base">
-                Kirim reaksi emoji secara massal ke saluran WhatsApp secara instan dengan sistem kustomisasi penuh premium.
-            </p>
+    <div id="sidebar" class="fixed top-0 left-0 h-full w-80 z-40 glass border-r border-white/20 dark:border-slate-700/50 transform -translate-x-full transition-transform duration-500 ease-out p-5 pt-24 shadow-2xl flex flex-col justify-between overflow-y-auto">
+        
+        <div class="space-y-6">
+            <div class="text-center border-b border-slate-300 dark:border-slate-700 pb-3">
+                <h2 class="text-lg font-bold uppercase tracking-widest text-emerald-500"><i class="fa-solid fa-gauge-high mr-2"></i>PanSkip Menu</h2>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="showAlert('Apa itu PanSkip?', 'PanSkip adalah platform modern yang membantu melewati halaman shortlink yang menyebalkan, penuh iklan, dan berputar-putar secara otomatis tanpa ribet.')" class="w-full py-2.5 px-4 rounded-xl flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-600 text-sm font-medium shadow-sm active:scale-95">
+                    <i class="fa-solid fa-circle-info w-5 text-center text-base"></i> Apa itu PanSkip?
+                </button>
+
+                <button onclick="showAlert('Tata Cara Menggunakan', '1. Tempelkan link tautan pendek Anda pada kolom input di halaman depan.\n2. Klik tombol \'Bypass Link Now\'.\n3. Tunggu sistem bekerja, dan link tujuan asli Anda akan langsung muncul tanpa iklan!')" class="w-full py-2.5 px-4 rounded-xl flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-600 text-sm font-medium shadow-sm active:scale-95">
+                    <i class="fa-solid fa-book-open w-5 text-center text-base"></i> Tata Cara Menggunakan
+                </button>
+
+                <a href="https://pandow-aio.vercel.app/" target="_blank" class="w-full py-2.5 px-4 rounded-xl flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-600 text-sm font-medium shadow-sm active:scale-95">
+                    <i class="fa-solid fa-cloud-arrow-down w-5 text-center text-base"></i> PanDow
+                </a>
+
+                <a id="msgAdminBtn" href="#" target="_blank" class="w-full py-2.5 px-4 rounded-xl flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-600 text-sm font-medium shadow-sm active:scale-95">
+                    <i class="fa-solid fa-user-shield w-5 text-center text-base"></i> Message Admin
+                </a>
+            </div>
+
+            <div class="border-t border-slate-300 dark:border-slate-700 pt-4 space-y-2">
+                <div class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-1"><i class="fa-solid fa-paper-plane mr-1"></i> Send Your Chat</div>
+                <form id="chatForm" class="flex flex-col gap-2">
+                    <input type="text" id="messageInput" placeholder="Masukkan text disini..." required 
+                           class="w-full px-3 py-2 bg-white/70 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs text-slate-800 dark:text-white">
+                    <button type="submit" id="sendBtn" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-md flex items-center justify-center gap-2 active:scale-95">
+                        <span>Kirim Ke Admin</span> <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <div class="glass-card rounded-3xl p-6 md:p-10 animate-fade-in" style="animation-delay: 0.2s;">
-            <form id="react-form" class="space-y-6">
-                
-                <div class="space-y-2">
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                        <i class="fa-solid fa-link text-emerald-400"></i> URL Postingan Saluran
-                    </label>
-                    <div class="relative group">
-                        <input type="url" id="channel-url" required
-                            placeholder="https://whatsapp.com/channel/xxxx/175" 
-                            class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-5 py-4 pl-12 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all duration-300">
-                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-emerald-400 transition-colors">
-                            <i class="fa-brands fa-whatsapp text-lg"></i>
-                        </div>
-                    </div>
-                    <p class="text-[11px] text-slate-500">Pastikan menyertakan ID postingan di bagian akhir url (Contoh: /175)</p>
+        <div class="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
+            <button id="themeToggle" class="w-full py-2.5 px-4 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800 shadow-md text-xs font-semibold hover:scale-[1.02] active:scale-95">
+                <span id="themeText">Dark Mode</span>
+                <i id="themeIcon" class="fa-solid fa-moon text-sm text-emerald-500"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 hidden opacity-0 transition-opacity duration-500"></div>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-6 mt-12">
+        <div class="w-full max-w-md text-center space-y-6">
+            
+            <div class="relative inline-block animate-bounce-slow">
+                <div class="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse-slow"></div>
+                <img id="mainLogo" src="" alt="PanSkip Logo" class="w-36 h-36 object-contain relative z-10 drop-shadow-[0_8px_12px_rgba(16,185,129,0.25)]">
+            </div>
+
+            <div class="glass border border-white/20 dark:border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
+                <div class="text-left">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-500"><i class="fa-solid fa-bolt mr-2"></i>Bypass Link Engine</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Tempel tautan safelink/shortlink iklan Anda di bawah.</p>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                        <i class="fa-regular fa-face-smile text-emerald-400"></i> Kustom Emoji / Spam
-                    </label>
-                    <div class="relative">
-                        <input type="text" id="custom-emoji" value="🍍" required
-                            placeholder="Contoh: 🔥 atau 🍍,👍,❤️" 
-                            class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-5 py-4 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all duration-300 text-lg">
-                    </div>
-                </div>
-
-                <button type="submit" id="btn-submit"
-                    class="glow-btn w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-space font-bold text-base py-4 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:shadow-emerald-500/35 hover:-translate-y-[2px] flex items-center justify-center gap-2 mt-4 cursor-pointer">
-                    <i class="fa-solid fa-paper-plane"></i> Kirim Reaksi Sekarang
-                </button>
-            </form>
-
-            <div id="result-box" class="mt-8 hidden animate-fade-in">
-                <div class="flex items-center justify-between mb-2 px-1">
-                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                        <i class="fa-solid fa-terminal text-cyan-400"></i> Server Response
-                    </span>
-                    <span id="status-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space"></span>
-                </div>
-                <div class="bg-slate-950 border border-white/5 rounded-2xl p-5 font-mono text-xs sm:text-sm overflow-x-auto relative group">
-                    <pre id="json-output" class="text-emerald-400"></pre>
-                    <button onclick="copyResponse()" class="absolute top-3 right-3 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white p-2 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100">
-                        <i class="fa-regular fa-copy"></i>
+                <div class="space-y-3">
+                    <input type="url" id="bypassInput" placeholder="https://link2unlock.com/..." required
+                           class="w-full px-4 py-3 bg-white/80 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm text-slate-800 dark:text-white">
+                    
+                    <button onclick="processBypass()" id="bypassBtn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-95">
+                        <span>Bypass Link Now</span> <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </button>
                 </div>
+
+                <div id="resultBox" class="hidden p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-left space-y-2 animate-pulse-slow">
+                    <span class="text-xs font-bold text-emerald-500 uppercase block"><i class="fa-solid fa-square-check mr-1"></i> Success Unlocked:</span>
+                    <a id="resultUrl" href="#" target="_blank" class="text-sm text-emerald-400 underline font-medium break-all block hover:text-emerald-300"></a>
+                </div>
             </div>
+
         </div>
     </main>
 
-    <footer class="text-center py-8 text-slate-600 text-xs border-t border-white/5 mt-auto">
-        <p>&copy; 2026 <span class="font-space font-bold text-slate-500">PanReacth</span>. Powered By Reza sukses</p>
-    </footer>
+    <div id="customModal" class="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 max-w-sm w-full p-6 rounded-2xl shadow-2xl transform scale-90 transition-transform duration-300">
+            <h3 id="modalTitle" class="text-lg font-bold text-emerald-500 mb-2"></h3>
+            <p id="modalBody" class="text-sm text-slate-600 dark:text-zinc-300 whitespace-pre-line leading-relaxed mb-5"></p>
+            <button onclick="closeModal()" class="w-full py-2 bg-slate-200 dark:bg-slate-700 font-semibold rounded-xl text-sm hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500">Dimengerti</button>
+        </div>
+    </div>
 
     <script>
-        // Sinkronisasi link logo paling atas ke elemen UI
-        const favIconLink = document.getElementById('fav-icon').href;
-        document.getElementById('main-logo').src = favIconLink;
+        // Set Link Logo & Link Message Admin Terintegrasi
+        document.getElementById('mainLogo').src = PANSKIP_LOGO_URL;
+        document.getElementById('msgAdminBtn').href = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}`;
 
-        const form = document.getElementById('react-form');
-        const btnSubmit = document.getElementById('btn-submit');
-        const resultBox = document.getElementById('result-box');
-        const jsonOutput = document.getElementById('json-output');
-        const statusBadge = document.getElementById('status-badge');
-
-        // AUTOMATIC API KEY CONFIGURATION
-        const AUTOMATIC_API_KEY = "nanasfree";
-
-        // CUSTOM NOTIFICATION SYSTEM (Bukan bawaan browser)
-        function showNotification(type, title, message) {
-            const container = document.getElementById('notification-container');
-            const notif = document.createElement('div');
-            
-            let bgGradient = 'from-slate-900 to-slate-950 border-white/10';
-            let icon = 'fa-circle-info text-blue-400';
-            if(type === 'success') {
-                bgGradient = 'from-emerald-950/90 to-slate-950 border-emerald-500/30';
-                icon = 'fa-circle-check text-emerald-400';
-            } else if (type === 'error') {
-                bgGradient = 'from-rose-950/90 to-slate-950 border-rose-500/30';
-                icon = 'fa-circle-exclamation text-rose-400';
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuIcon = menuBtn.querySelector('i');
+        
+        // INTERAKSI MENU SIDEBAR
+        let isSidebarOpen = false;
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                menuIcon.classList.replace('fa-ellipsis-vertical', 'fa-xmark');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.remove('opacity-100');
+                menuIcon.classList.replace('fa-xmark', 'fa-ellipsis-vertical');
+                setTimeout(() => overlay.classList.add('hidden'), 500);
             }
-
-            notif.className = `animate-notification bg-gradient-to-r ${bgGradient} border p-4 rounded-2xl shadow-2xl flex items-start gap-3 w-full`;
-            notif.innerHTML = `
-                <div class="text-lg mt-0.5">${`<i class="fa-solid ${icon}"></i>`}</div>
-                <div class="flex-1">
-                    <h4 class="text-sm font-bold text-slate-200 font-space">${title}</h4>
-                    <p class="text-xs text-slate-400 mt-0.5">${message}</p>
-                </div>
-                <button class="text-slate-500 hover:text-slate-300 transition-colors text-xs" onclick="this.parentElement.remove()">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            `;
-
-            container.appendChild(notif);
-            
-            // Auto remove setelah 4 detik
-            setTimeout(() => {
-                if(notif) {
-                    notif.style.opacity = '0';
-                    notif.style.transform = 'scale(0.9)';
-                    notif.style.transition = 'all 0.3s ease';
-                    setTimeout(() => notif.remove(), 300);
-                }
-            }, 4000);
         }
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
 
-        // FORM SUBMIT HANDLER
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const url = document.getElementById('channel-url').value;
-            const emojis = document.getElementById('custom-emoji').value;
+        // FITUR DARK / LIGHT MODE
+        const themeToggle = document.getElementById('themeToggle');
+        const themeText = document.getElementById('themeText');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
 
-            // Efek Animasi Tombol saat loading
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Memproses Request...`;
-            btnSubmit.classList.add('opacity-80');
-
-            showNotification('info', 'Sistem Berjalan', 'Sedang mengirim instruksi reaksi ke server...');
-
-            try {
-                // Construct URL API Nanzz (Menggunakan AUTOMATIC_API_KEY secara internal)
-                const apiUrl = `https://api-nanzz.my.id/docs/api/tools/react-ch-free.php?url=${encodeURIComponent(url)}&emojis=${encodeURIComponent(emojis)}&apikey=${encodeURIComponent(AUTOMATIC_API_KEY)}`;
-                
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                // Munculkan Kotak Hasil dengan animasi
-                resultBox.classList.remove('hidden');
-                jsonOutput.textContent = JSON.stringify(data, null, 2);
-
-                if (data.status === true || data.message?.toLowerCase().includes('success')) {
-                    statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                    statusBadge.innerText = "SUCCESS";
-                    showNotification('success', 'Berhasil!', 'Spam reaksi berhasil diproses ke target.');
-                } else {
-                    statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                    statusBadge.innerText = "FAILED";
-                    showNotification('error', 'Gagal Respons', data.message || 'Gagal mengeksekusi ke WhatsApp.');
-                }
-
-            } catch (error) {
-                resultBox.classList.remove('hidden');
-                jsonOutput.textContent = JSON.stringify({ error: "Koneksi terputus atau API bermasalah", detail: error.message }, null, 2);
-                
-                statusBadge.className = "text-[11px] font-bold px-2 py-0.5 rounded-md uppercase font-space bg-rose-500/10 text-rose-400 border border-rose-500/20";
-                statusBadge.innerText = "ERROR";
-                
-                showNotification('error', 'Error Sistem', 'Terjadi kesalahan jaringan atau API internal.');
-            } finally {
-                // Kembalikan status tombol
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Reaksi Sekarang`;
-                btnSubmit.classList.remove('opacity-80');
+        themeToggle.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeText.textContent = 'Light Mode';
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                themeText.textContent = 'Dark Mode';
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'dark');
             }
         });
-
-        // ACTION COPY TO CLIPBOARD
-        function copyResponse() {
-            const text = document.getElementById('json-output').textContent;
-            navigator.clipboard.writeText(text);
-            showNotification('info', 'Disalin', 'Respons JSON berhasil disalin ke clipboard.');
+        if (localStorage.getItem('theme') === 'light') {
+            html.classList.remove('dark');
+            themeText.textContent = 'Light Mode';
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
         }
+
+        // CUSTOM MODAL POPUP
+        const customModal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        function showAlert(title, text) {
+            modalTitle.textContent = title;
+            modalBody.textContent = text;
+            customModal.classList.remove('hidden');
+            setTimeout(() => {
+                customModal.classList.add('opacity-100');
+                customModal.querySelector('div').classList.replace('scale-90', 'scale-100');
+            }, 10);
+        }
+        function closeModal() {
+            customModal.classList.remove('opacity-100');
+            customModal.querySelector('div').classList.replace('scale-100', 'scale-90');
+            setTimeout(() => customModal.classList.add('hidden'), 300);
+        }
+
+        // INTEGRASI API ENGINE BYPASS PANSKIP (HOME)
+        async function processBypass() {
+            const inputUrl = document.getElementById('bypassInput').value.trim();
+            const bypassBtn = document.getElementById('bypassBtn');
+            const resultBox = document.getElementById('resultBox');
+            const resultUrl = document.getElementById('resultUrl');
+
+            if (!inputUrl) {
+                showAlert('Input Kosong ⚠️', 'Masukkan URL shortlink terlebih dahulu.');
+                return;
+            }
+
+            bypassBtn.disabled = true;
+            bypassBtn.innerHTML = `<span>Processing...</span> <i class="fa-solid fa-circle-notch animate-spin"></i>`;
+            resultBox.classList.add('hidden');
+
+            try {
+                const encodedUrl = encodeURIComponent(inputUrl);
+                const response = await fetch(`https://api-nanzz.my.id/docs/api/tools/skip-link.php?url=${encodedUrl}`);
+                const data = await response.json();
+
+                if (data.status && data.result.destination_url) {
+                    resultUrl.href = data.result.destination_url;
+                    resultUrl.textContent = data.result.destination_url;
+                    resultBox.classList.remove('hidden');
+                    showAlert('Sukses Terbuka! 🎉', 'Safelink berhasil dilewati, silakan periksa kotak hasil di bawah tombol.');
+                } else {
+                    showAlert('Gagal Bypass ❌', 'Tautan tidak didukung oleh sistem API saat ini.');
+                }
+            } catch (error) {
+                showAlert('API Error ❌', 'Gagal terhubung ke server API Skipper, coba lagi nanti.');
+            } finally {
+                bypassBtn.disabled = false;
+                bypassBtn.innerHTML = `<span>Bypass Link Now</span> <i class="fa-solid fa-wand-magic-sparkles"></i>`;
+            }
+        }
+
+        // PERBAIKAN FITUR SEND CHAT: OTOMATIS REDIRECT KE WHATSAPP PENGGUNA
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pesan = messageInput.value.trim();
+            
+            if (pesan) {
+                // Encode teks agar aman dibaca oleh URL WhatsApp
+                const teksFormat = encodeURIComponent(`Halo Admin PanSkip, ada pesan baru:\n\n"${pesan}"`);
+                // Membuka tab baru otomatis menggunakan nomor sender masing-masing menuju WA Admin
+                window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${teksFormat}`, '_blank');
+                // Mengosongkan form input kembali
+                messageInput.value = '';
+            }
+        });
     </script>
 </body>
 </html>
