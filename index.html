@@ -149,6 +149,23 @@
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-3 pointer-events-none"></div>
 
+  <!-- MODAL VERIFIKASI (PRE-PARSING) -->
+  <div id="verify-modal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-2xl border border-brand-500/30 text-center relative shadow-2xl">
+      <div class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-5 shadow-glow">
+        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-2">Sebelum Memulai Verifikasi dulu ya</h3>
+      <p class="text-xs sm:text-sm text-gray-400 leading-relaxed mb-6">
+        Klik tombol verifikasi di bawah untuk melangkah ke proses bypass tautan. Sistem akan melakukan validasi keamanan secara otomatis.
+      </p>
+      <button id="btn-start-verify" class="sound-btn w-full py-3.5 px-6 bg-brand-500 hover:bg-brand-600 active:scale-95 text-dark-base font-extrabold text-sm rounded-xl shadow-glow hover:shadow-glow-lg transition-all duration-200 flex items-center justify-center gap-2">
+        <i data-lucide="shield-check" class="w-5 h-5"></i>
+        <span id="verify-btn-text">Verifikasi</span>
+      </button>
+    </div>
+  </div>
+
   <!-- HEADER / NAVBAR -->
   <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-header border-b border-white/5 py-4">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -412,19 +429,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
         <div class="reveal">
-          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">5M+</p>
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">1M+</p>
           <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Link Dibypass</p>
         </div>
         <div class="reveal">
-          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">99.9%</p>
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">56.8%</p>
           <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Tingkat Keberhasilan</p>
         </div>
         <div class="reveal">
-          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">120+</p>
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">89+</p>
           <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Provider Supported</p>
         </div>
         <div class="reveal">
-          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">0s</p>
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">0.8s</p>
           <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Waktu Tunggu Iklan</p>
         </div>
       </div>
@@ -543,13 +560,13 @@
       </div>
 
       <div class="pt-8 border-t border-gray-800 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p>&copy; 2026 PanSkip Engine. All rights reserved.</p>
-        <p>Built with speed, elegance & precision.</p>
+        <p>&copy; 2026 PanSkip Engine. Dibuat dengan sepenuh hati.</p>
+        <p>dibuat oleh PT Reza Jaya .</p>
       </div>
     </div>
   </footer>
 
-  <!-- VANILLA JAVASCRIPT LOGIC WITH NEW API & SOUND EFFECT -->
+  <!-- VANILLA JAVASCRIPT LOGIC WITH VERIFICATION MODAL & STEALTH TIMER -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // Initialize Lucide Icons
@@ -640,7 +657,7 @@
         }, 3000);
       }
 
-      // 4. REAL API INTEGRATION WITH API BARU (kyzzz.xyz)
+      // 4. VERIFICATION MODAL & PARSING SYSTEM
       const bypassForm = document.getElementById("bypass-form");
       const targetUrlInput = document.getElementById("target-url");
       const btnSubmit = document.getElementById("btn-submit");
@@ -650,7 +667,14 @@
       const btnCopy = document.getElementById("btn-copy");
       const btnOpen = document.getElementById("btn-open");
 
-      bypassForm.addEventListener("submit", async (e) => {
+      const verifyModal = document.getElementById("verify-modal");
+      const btnStartVerify = document.getElementById("btn-start-verify");
+      const verifyBtnText = document.getElementById("verify-btn-text");
+
+      let pendingUrl = "";
+
+      // Trigger Modal saat form dikirim
+      bypassForm.addEventListener("submit", (e) => {
         e.preventDefault();
         const rawUrl = targetUrlInput.value.trim();
 
@@ -659,21 +683,45 @@
           return;
         }
 
-        // State UI saat proses fetch API
+        pendingUrl = rawUrl;
+        
+        // Reset state tombol verifikasi & tampilkan modal
+        btnStartVerify.disabled = false;
+        verifyBtnText.textContent = "Verifikasi";
+        btnStartVerify.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Verifikasi</span>`;
+        lucide.createIcons();
+
+        verifyModal.classList.remove("hidden");
+        verifyModal.classList.add("flex");
+      });
+
+      // Proses Verifikasi dengan Stealth Timer 8s
+      btnStartVerify.addEventListener("click", () => {
+        btnStartVerify.disabled = true;
+        // Animasi loading tanpa menampilkan teks hitung mundur (invisible 8s timer)
+        btnStartVerify.innerHTML = `<div class="w-5 h-5 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div><span>Memverifikasi...</span>`;
+        
+        setTimeout(() => {
+          // Tutup Modal
+          verifyModal.classList.add("hidden");
+          verifyModal.classList.remove("flex");
+
+          // Jalankan proses fetching API
+          executeBypass(pendingUrl);
+        }, 8000);
+      });
+
+      // Eksekusi API Kyzzz Bypass
+      async function executeBypass(rawUrl) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = `<div class="w-4 h-4 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div> Parsing...`;
         resultBox.classList.add("hidden");
 
         try {
-          // Permintaan ke REST API Kyzzz
           const apiUrl = `https://api.kyzzz.xyz/api/bypass/bypass2?url=${encodeURIComponent(rawUrl)}&apikey=kyzz73447047341593`;
-          const response = await fetch(apiUrl, {
-            method: "GET"
-          });
-
+          const response = await fetch(apiUrl, { method: "GET" });
           const data = await response.json();
 
-          // Pengecekan respons API baru
           if (data && data.status && data.result && data.result.direct) {
             const finalUrl = data.result.direct;
             resultUrl.textContent = finalUrl;
@@ -692,7 +740,7 @@
           btnSubmit.innerHTML = `<span>Bypass Link</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
           lucide.createIcons();
         }
-      });
+      }
 
       // COPY URL TO CLIPBOARD
       btnCopy.addEventListener("click", () => {
