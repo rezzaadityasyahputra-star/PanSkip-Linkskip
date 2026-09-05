@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disclaimer — PanSkip Engine</title>
+  <meta name="description" content="Halaman Penyangkalan Hukum dan Batasan Tanggung Jawab Penggunaan Layanan PanSkip." />
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d',
+              950: '#052e16',
+            },
+            dark: {
+              base: '#0b0f17',
+              card: '#111827',
+              border: '#1f2937',
+            }
+          },
+          boxShadow: {
+            'glow': '0 0 25px -5px rgba(34, 197, 94, 0.4)',
+            'glow-lg': '0 0 50px -10px rgba(34, 197, 94, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* TOUCH EXPERIENCE & RESET ENHANCEMENTS */
+    button,
+    a,
+    input,
+    .card,
+    .clickable,
+    [role="button"] {
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      user-select: none;
+    }
+
+    button:focus,
+    a:focus {
+      outline: none;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid #22c55e;
+      outline-offset: 3px;
+    }
+
+    button:active,
+    a:active,
+    .clickable:active {
+      transform: scale(0.97);
+    }
+
+    /* GLASSMORPHISM & CUSTOM UI EFFECTS */
+    .glass-header {
+      background: rgba(11, 15, 23, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* ANIMATED GRADIENT BACKGROUND */
+    .hero-bg {
+      background: radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.12) 0%, rgba(11, 15, 23, 1) 70%);
+    }
+
+    /* REVEAL ANIMATIONS */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-dark-base text-gray-100 font-sans antialiased selection:bg-brand-500 selection:text-white overflow-x-hidden min-h-screen flex flex-col justify-between">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="fixed top-0 left-0 right-0 z-50 glass-header border-b border-white/5 py-4">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      
+      <!-- LOGO (TIDAK REDIRECT) -->
+      <a href="javascript:void(0)" class="flex items-center gap-2 group cursor-default">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-dark-base font-extrabold shadow-glow transition-transform duration-300">
+          <i data-lucide="shield-check" class="w-6 h-6 stroke-[2.5]"></i>
+        </div>
+        <span class="text-xl font-extrabold tracking-tight text-white">Pan<span class="text-brand-400">Skip</span></span>
+      </a>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT: DISCLAIMER SECTION -->
+  <main class="relative pt-32 pb-20 hero-bg flex-grow">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      
+      <!-- TITLE BOX -->
+      <div class="text-center mb-12 reveal">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs sm:text-sm font-semibold mb-4">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+          <span>Informasi Legal</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Disclaimer <span class="text-brand-400">&</span> Ketentuan
+        </h1>
+        <p class="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto">
+          Harap membaca penyangkalan hukum berikut dengan saksama sebelum menggunakan layanan pengalihan otomatis PanSkip.
+        </p>
+      </div>
+
+      <!-- DISCLAIMER CONTENT CARD -->
+      <div class="glass-card p-6 sm:p-10 rounded-3xl border border-gray-800 shadow-2xl space-y-8 text-gray-300 text-sm leading-relaxed reveal">
+        
+        <!-- ITEM 1 -->
+        <section class="space-y-2">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="info" class="w-5 h-5 text-brand-400 shrink-0"></i>
+            1. Umum & Tujuan Layanan
+          </h2>
+          <p class="pl-7 text-gray-400">
+            PanSkip disediakan semata-mata sebagai alat bantu utilitas teknis untuk mempermudah navigasi web dan pengalihan URL secara efisien. Layanan ini tidak dimaksudkan untuk merugikan pihak manapun atau melanggar hak cipta domain terkait.
+          </p>
+        </section>
+
+        <hr class="border-gray-800/80">
+
+        <!-- ITEM 2 -->
+        <section class="space-y-2">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="external-link" class="w-5 h-5 text-brand-400 shrink-0"></i>
+            2. Tanggung Jawab Tautan Eksternal
+          </h2>
+          <p class="pl-7 text-gray-400">
+            PanSkip tidak memiliki kendali atas isi, kebijakan privasi, atau keamanan dari situs pihak ketiga (target URL akhir) yang diproses. Kami tidak bertanggung jawab atas kerugian, malware, atau konten berbahaya yang mungkin ada pada tautan tujuan Anda.
+          </p>
+        </section>
+
+        <hr class="border-gray-800/80">
+
+        <!-- ITEM 3 -->
+        <section class="space-y-2">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="shield-off" class="w-5 h-5 text-brand-400 shrink-0"></i>
+            3. Tanpa Jaminan (No Warranty)
+          </h2>
+          <p class="pl-7 text-gray-400">
+            Layanan ini disediakan "sebagaimana adanya" (*as is*) tanpa jaminan dalam bentuk apa pun, baik tersurat maupun tersirat. PanSkip tidak menjamin bahwa proses bypass akan selalu berhasil 100% pada semua penyedia URL shortener di internet.
+          </p>
+        </section>
+
+        <hr class="border-gray-800/80">
+
+        <!-- ITEM 4 -->
+        <section class="space-y-2">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="user-check" class="w-5 h-5 text-brand-400 shrink-0"></i>
+            4. Tanggung Jawab Pengguna
+          </h2>
+          <p class="pl-7 text-gray-400">
+            Pengguna bertanggung jawab penuh atas tautan yang diinput dan diproses melalui platform PanSkip. Penggunaan alat ini untuk tujuan ilegal, pembajakan, atau tindakan melanggar hukum sepenuhnya menjadi tanggung jawab individu masing-masing.
+          </p>
+        </section>
+
+        <!-- BOTTOM NOTE -->
+        <div class="p-4 bg-brand-950/30 border border-brand-500/20 rounded-2xl text-xs text-brand-300/90 flex items-center gap-3">
+          <i data-lucide="check-circle-2" class="w-5 h-5 text-brand-400 shrink-0"></i>
+          <span>Dengan terus menggunakan PanSkip, Anda dianggap telah memahami dan menyetujui seluruh poin penyangkalan di atas.</span>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ACTION -->
+      <div class="mt-8 text-center reveal">
+        <a href="index.html" class="sound-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-dark-base font-extrabold text-sm shadow-glow transition-all duration-300">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Kembali ke Halaman Utama</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-dark-card border-t border-white/5 py-8 text-gray-400">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p>&copy; 2026 PanSkip Engine. Dibuat dengan sepenuh hati.</p>
+      <p>dibuat oleh PT Reza Jaya .</p>
+    </div>
+  </footer>
+
+  <!-- VANILLA JAVASCRIPT LOGIC -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Initialize Lucide Icons
+      lucide.createIcons();
+
+      // SOUND EFFECT VIA WEB AUDIO API
+      const playClickSound = () => {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04);
+
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start();
+          osc.stop(ctx.currentTime + 0.04);
+        } catch (e) {
+          // Autoplay protection fallback
+        }
+      };
+
+      // Sound click events
+      document.querySelectorAll("button, a.sound-btn").forEach((elem) => {
+        elem.addEventListener("click", () => {
+          playClickSound();
+        });
+      });
+
+      // Intersection Observer Reveal Animation
+      const reveals = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("active");
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      reveals.forEach((el) => observer.observe(el));
+    });
+  </script>
+</body>
+</html>

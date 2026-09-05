@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PanSkip — Premium Link Bypasser & URL Shortener Converter</title>
+  <meta name="description" content="PanSkip adalah platform bypass link otomatis, aman, dan super cepat untuk melewati halaman iklan dan langsung ke URL tujuan asli." />
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d',
+              950: '#052e16',
+            },
+            dark: {
+              base: '#0b0f17',
+              card: '#111827',
+              border: '#1f2937',
+            }
+          },
+          boxShadow: {
+            'glow': '0 0 25px -5px rgba(34, 197, 94, 0.4)',
+            'glow-lg': '0 0 50px -10px rgba(34, 197, 94, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* TOUCH EXPERIENCE & RESET ENHANCEMENTS */
+    button,
+    a,
+    input,
+    .card,
+    .clickable,
+    [role="button"] {
+      -webkit-tap-highlight-color: transparent !important;
+      -webkit-touch-callout: none !important;
+      user-select: none;
+    }
+
+    button:focus,
+    a:focus,
+    input:focus {
+      outline: none;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #22c55e;
+      outline-offset: 3px;
+    }
+
+    button:active,
+    a:active,
+    .clickable:active {
+      transform: scale(0.97);
+    }
+
+    /* GLASSMORPHISM & CUSTOM UI EFFECTS */
+    .glass-header {
+      background: rgba(11, 15, 23, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    /* ANIMATED GRADIENT BACKGROUND */
+    .hero-bg {
+      background: radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.15) 0%, rgba(11, 15, 23, 1) 70%);
+    }
+
+    /* REVEAL ANIMATIONS (INTERSECTION OBSERVER) */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ACCORDION STYLES */
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+    }
+
+    .faq-answer.open {
+      max-height: 500px;
+      transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
+    }
+
+    .faq-icon {
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-dark-base text-gray-100 font-sans antialiased selection:bg-brand-500 selection:text-white overflow-x-hidden">
+
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen" class="fixed inset-0 z-[100] bg-dark-base flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="relative flex items-center justify-center">
+      <div class="w-20 h-20 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
+      <div class="absolute inset-0 flex items-center justify-center font-bold text-xl text-brand-400">
+        <i data-lucide="zap" class="w-8 h-8"></i>
+      </div>
+    </div>
+    <p class="mt-4 text-sm font-semibold tracking-wider text-gray-400 uppercase">Memuat PanSkip...</p>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- MODAL VERIFIKASI (PRE-PARSING) -->
+  <div id="verify-modal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-2xl border border-brand-500/30 text-center relative shadow-2xl">
+      <div class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-5 shadow-glow">
+        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-2">Sebelum Memulai Verifikasi dulu ya</h3>
+      <p class="text-xs sm:text-sm text-gray-400 leading-relaxed mb-6">
+        Klik tombol verifikasi di bawah untuk melangkah ke proses bypass tautan. Sistem akan melakukan validasi keamanan secara otomatis.
+      </p>
+      <button id="btn-start-verify" class="sound-btn w-full py-3.5 px-6 bg-brand-500 hover:bg-brand-600 active:scale-95 text-dark-base font-extrabold text-sm rounded-xl shadow-glow hover:shadow-glow-lg transition-all duration-200 flex items-center justify-center gap-2">
+        <i data-lucide="shield-check" class="w-5 h-5"></i>
+        <span id="verify-btn-text">Verifikasi</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HEADER / NAVBAR -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-header border-b border-white/5 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      
+      <!-- LOGO -->
+      <a href="#" class="flex items-center gap-2 group sound-btn">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-dark-base font-extrabold shadow-glow group-hover:scale-105 transition-transform duration-300">
+          <i data-lucide="shield-check" class="w-6 h-6 stroke-[2.5]"></i>
+        </div>
+        <span class="text-xl font-extrabold tracking-tight text-white">Pan<span class="text-brand-400">Skip</span></span>
+      </a>
+
+      <!-- DESKTOP MENU -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#hero" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">Bypass URL</a>
+        <a href="#about" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">Tentang</a>
+        <a href="#services" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">Layanan</a>
+        <a href="#features" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">Keunggulan</a>
+        <a href="#faq" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">FAQ</a>
+      </nav>
+
+      <!-- DESKTOP CTA -->
+      <div class="hidden md:flex items-center gap-4">
+        <a href="#hero" class="sound-btn px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-dark-base font-bold text-sm shadow-glow hover:shadow-glow-lg transition-all duration-300">
+          Bypass Sekarang
+        </a>
+      </div>
+
+      <!-- MOBILE HAMBURGER BUTTON -->
+      <button id="mobile-menu-btn" aria-label="Buka Navigasi" class="sound-btn md:hidden p-2 rounded-lg bg-dark-card border border-gray-800 text-gray-300 hover:text-white">
+        <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+      </button>
+
+    </div>
+
+    <!-- MOBILE MENU DROPDOWN -->
+    <div id="mobile-menu" class="hidden md:hidden bg-dark-card/95 backdrop-blur-xl border-b border-gray-800 px-4 pt-4 pb-6 space-y-4">
+      <a href="#hero" class="mobile-nav-link sound-btn block text-gray-300 hover:text-brand-400 font-medium py-2">Bypass URL</a>
+      <a href="#about" class="mobile-nav-link sound-btn block text-gray-300 hover:text-brand-400 font-medium py-2">Tentang PanSkip</a>
+      <a href="#services" class="mobile-nav-link sound-btn block text-gray-300 hover:text-brand-400 font-medium py-2">Layanan Supported</a>
+      <a href="#features" class="mobile-nav-link sound-btn block text-gray-300 hover:text-brand-400 font-medium py-2">Keunggulan</a>
+      <a href="#faq" class="mobile-nav-link sound-btn block text-gray-300 hover:text-brand-400 font-medium py-2">FAQ</a>
+      <div class="pt-2">
+        <a href="#hero" class="mobile-nav-link sound-btn block w-full text-center px-5 py-3 rounded-xl bg-brand-500 text-dark-base font-bold text-sm shadow-glow">
+          Mulai Bypass URL
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION WITH REAL API BYPASS FORM -->
+  <section id="hero" class="relative pt-32 pb-20 md:pt-44 md:pb-32 hero-bg overflow-hidden min-h-screen flex items-center">
+    <div class="absolute top-1/4 left-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 right-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+      <div class="text-center max-w-3xl mx-auto reveal">
+        
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs sm:text-sm font-semibold mb-6">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span>Engine Bypass v2 Active</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+          Bypass Shortlink & Iklan <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-emerald-300">Tanpa Menunggu</span>
+        </h1>
+
+        <p class="text-base sm:text-xl text-gray-400 font-normal leading-relaxed mb-10">
+          PanSkip membantu Anda melompati rantai iklan yang membingungkan, timer jebakan, dan captcha langsung menuju URL asli tujuan Anda dengan aman dan kilat.
+        </p>
+
+        <!-- INTERACTIVE BYPASS BOX -->
+        <div class="glass-card p-4 sm:p-6 rounded-2xl max-w-2xl mx-auto shadow-2xl mb-8">
+          <form id="bypass-form" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-grow">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                <i data-lucide="link" class="w-5 h-5"></i>
+              </div>
+              <input type="url" id="target-url" required placeholder="Tempel URL Shortener (misal: sub2unlock.me/7NQZLO6)..." class="w-full pl-11 pr-4 py-3.5 bg-dark-base/80 border border-gray-700/80 rounded-xl text-white placeholder-gray-500 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all duration-200">
+            </div>
+            <button type="submit" id="btn-submit" class="sound-btn px-6 py-3.5 bg-brand-500 hover:bg-brand-600 active:scale-95 text-dark-base font-extrabold text-sm rounded-xl shadow-glow hover:shadow-glow-lg transition-all duration-200 flex items-center justify-center gap-2 min-w-[140px]">
+              <span>Bypass Link</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </form>
+
+          <!-- RESULT CONTAINER -->
+          <div id="result-box" class="hidden mt-6 p-4 bg-dark-base/90 rounded-xl border border-brand-500/30 text-left">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-brand-400 uppercase tracking-wider flex items-center gap-1">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Result Success
+              </span>
+              <span id="result-status" class="text-xs text-gray-400">Status: OK</span>
+            </div>
+            <div class="p-3 bg-dark-card rounded-lg border border-gray-800 flex items-center justify-between gap-3 overflow-hidden">
+              <span id="result-url" class="text-sm font-mono text-emerald-300 truncate"></span>
+              <div class="flex gap-2 shrink-0">
+                <button id="btn-copy" class="sound-btn p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors" title="Salin URL">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+                <a id="btn-open" href="#" target="_blank" rel="noopener noreferrer" class="sound-btn p-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-dark-base transition-colors" title="Buka Link">
+                  <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-gray-400">
+          <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-4 h-4 text-brand-400"></i> Bebas Malware</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="eye-off" class="w-4 h-4 text-brand-400"></i> Tanpa Tracking</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-brand-400"></i> Auto Redirect</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section id="about" class="py-24 bg-dark-base relative border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="reveal">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-500/10 text-brand-400 text-xs font-bold uppercase tracking-wider mb-4">
+            Tentang PanSkip
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white leading-tight mb-6">
+            Navigasi Web Bebas Hambatan & Jebakan Iklan Berlapis
+          </h2>
+          <p class="text-gray-400 leading-relaxed mb-6">
+            PanSkip lahir dari kebutuhan akan privasi dan kenyamanan saat menjelajah internet. Banyak pemendek URL modern memaksa pengguna melewati hingga 5 halaman pop-up intersitial, skrip berbahaya, dan timer palsu sebelum sampai ke tujuan.
+          </p>
+          <p class="text-gray-400 leading-relaxed mb-8">
+            Engine cerdas kami secara terisolasi mengeksekusi pengalihan URL server-side dan mengekstrak target akhir secara instan, menghemat waktu dan melindungi perangkat Anda dari potensi pengunduhan otomatis yang merugikan.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl glass-card">
+              <h4 class="text-2xl font-black text-brand-400">100%</h4>
+              <p class="text-xs text-gray-400 font-medium">Bebas Script Pop-up</p>
+            </div>
+            <div class="p-4 rounded-xl glass-card">
+              <h4 class="text-2xl font-black text-brand-400">Real-Time</h4>
+              <p class="text-xs text-gray-400 font-medium">Bypass API Engine</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative reveal">
+          <div class="glass-card p-6 rounded-3xl border border-gray-800 shadow-2xl relative overflow-hidden">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-gray-800">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+              </div>
+              <span class="text-xs font-mono text-gray-500">panskip-engine.v3.js</span>
+            </div>
+            <div class="space-y-4 font-mono text-xs sm:text-sm">
+              <div class="p-3 bg-red-950/30 rounded-lg border border-red-900/40 text-red-300 flex justify-between items-center">
+                <span>[Shortener] redirecting -> ad-server-1.com</span>
+                <span class="text-[10px] bg-red-900/60 px-2 py-0.5 rounded">BLOCKED</span>
+              </div>
+              <div class="p-3 bg-red-950/30 rounded-lg border border-red-900/40 text-red-300 flex justify-between items-center">
+                <span>[Timer Trap] Wait 15 Seconds...</span>
+                <span class="text-[10px] bg-red-900/60 px-2 py-0.5 rounded">BYPASSED</span>
+              </div>
+              <div class="p-3 bg-brand-950/40 rounded-lg border border-brand-500/40 text-brand-300 flex justify-between items-center">
+                <span>[PanSkip Engine] Target URL Found!</span>
+                <span class="text-[10px] bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded font-bold">READY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section id="services" class="py-24 bg-dark-card/40 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Layanan Pengalihan yang Didukung</h2>
+        <p class="text-gray-400">PanSkip secara berkelanjutan memperbarui algoritma untuk mendukung ratusan provider shortlink terpopuler di dunia.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-card p-8 rounded-2xl transition-all duration-300 hover:-translate-y-2 reveal">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-6">
+            <i data-lucide="layers" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Multi-Tier Shortener</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Mendukung pengalihan berlapis yang memiliki lebih dari dua tahapan rute pengalihan iklan secara sekaligus.
+          </p>
+        </div>
+
+        <div class="glass-card p-8 rounded-2xl transition-all duration-300 hover:-translate-y-2 reveal">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-6">
+            <i data-lucide="lock" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Password-Protected Link</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Membantu memvalidasi integritas tautan sebelum dibuka agar tidak mengarah pada situs phishing berbahaya.
+          </p>
+        </div>
+
+        <div class="glass-card p-8 rounded-2xl transition-all duration-300 hover:-translate-y-2 reveal">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-6">
+            <i data-lucide="code-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">API Integrasi Web</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Sediakan akses endpoint REST API fleksibel bagi pengembang aplikasi untuk integrasi bypass otomatis.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section id="features" class="py-24 bg-dark-base border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Fitur Utama PanSkip</h2>
+        <p class="text-gray-400">Dirancang untuk kebiasaan pengguna modern yang menginginkan kecepatan, kemudahan, dan keamanan penuh.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-6 rounded-2xl reveal">
+          <i data-lucide="zap" class="w-8 h-8 text-brand-400 mb-4"></i>
+          <h4 class="text-lg font-bold text-white mb-2">Kecepatan Tinggi</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">Proses bypass dalam hitungan milidetik langsung dari server.</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl reveal">
+          <i data-lucide="shield-check" class="w-8 h-8 text-brand-400 mb-4"></i>
+          <h4 class="text-lg font-bold text-white mb-2">Tanpa Cookie Tracking</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">Privasi Anda terjamin. Kami tidak menyimpan histori penjelajahan.</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl reveal">
+          <i data-lucide="smartphone" class="w-8 h-8 text-brand-400 mb-4"></i>
+          <h4 class="text-lg font-bold text-white mb-2">Optimasi Mobile</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">UI responsif dirancang nyaman disentuh tanpa misklik.</p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl reveal">
+          <i data-lucide="refresh-cw" class="w-8 h-8 text-brand-400 mb-4"></i>
+          <h4 class="text-lg font-bold text-white mb-2">Update Otomatis</h4>
+          <p class="text-gray-400 text-xs leading-relaxed">Sistem mendeteksi dan beradaptasi secara otomatis pada domain baru.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATISTICS SECTION -->
+  <section class="py-20 bg-brand-950/20 border-y border-brand-500/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+        <div class="reveal">
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">1M+</p>
+          <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Link Dibypass</p>
+        </div>
+        <div class="reveal">
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">56.8%</p>
+          <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Tingkat Keberhasilan</p>
+        </div>
+        <div class="reveal">
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">89+</p>
+          <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Provider Supported</p>
+        </div>
+        <div class="reveal">
+          <p class="text-3xl sm:text-5xl font-black text-brand-400 mb-2">0.8s</p>
+          <p class="text-xs sm:text-sm text-gray-400 uppercase tracking-wider font-semibold">Waktu Tunggu Iklan</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq" class="py-24 bg-dark-base">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Pertanyaan Umum (FAQ)</h2>
+        <p class="text-gray-400">Segala hal yang perlu Anda ketahui tentang penggunaan PanSkip.</p>
+      </div>
+
+      <div class="space-y-4 reveal">
+        <div class="glass-card rounded-2xl overflow-hidden border border-gray-800">
+          <button class="faq-btn sound-btn w-full px-6 py-5 text-left font-bold text-white flex justify-between items-center gap-4 hover:text-brand-400 transition-colors">
+            <span>Apakah PanSkip benar-benar aman digunakan?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 shrink-0"></i>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="pb-5 text-gray-400 text-sm leading-relaxed border-t border-gray-800/60 pt-4">
+              Sangat aman. PanSkip mengeksekusi tautan di dalam server yang terisolasi sehingga perangkat komputer atau smartphone Anda tidak akan pernah terhubung langsung dengan iklan berisiko atau malware.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl overflow-hidden border border-gray-800">
+          <button class="faq-btn sound-btn w-full px-6 py-5 text-left font-bold text-white flex justify-between items-center gap-4 hover:text-brand-400 transition-colors">
+            <span>Mengapa ada link yang gagal dibypass?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 shrink-0"></i>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="pb-5 text-gray-400 text-sm leading-relaxed border-t border-gray-800/60 pt-4">
+              Beberapa pemendek tautan menggunakan captcha manual berantai yang memerlukan verifikasi manusia. Namun engine kami terus diperbarui untuk meminimalkan hal tersebut.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl overflow-hidden border border-gray-800">
+          <button class="faq-btn sound-btn w-full px-6 py-5 text-left font-bold text-white flex justify-between items-center gap-4 hover:text-brand-400 transition-colors">
+            <span>Apakah layanan ini dipungut biaya?</span>
+            <i data-lucide="chevron-down" class="faq-icon w-5 h-5 shrink-0"></i>
+          </button>
+          <div class="faq-answer px-6">
+            <p class="pb-5 text-gray-400 text-sm leading-relaxed border-t border-gray-800/60 pt-4">
+              PanSkip 100% gratis untuk penggunaan individu melalui antarmuka web.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="py-20 bg-dark-base relative overflow-hidden">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="glass-card p-10 sm:p-16 rounded-3xl border border-brand-500/30 text-center relative overflow-hidden shadow-glow">
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white mb-6">Siap Menjelajah Tanpa Hambatan?</h2>
+        <p class="text-gray-300 max-w-xl mx-auto mb-8 text-base">Hemat waktu Anda sekarang juga dan lewati semua rantai iklan pendek tanpa menunggu.</p>
+        <a href="#hero" class="sound-btn inline-flex items-center gap-2 px-8 py-4 bg-brand-500 hover:bg-brand-600 text-dark-base font-extrabold rounded-xl shadow-glow hover:shadow-glow-lg transition-all duration-300">
+          <span>Coba PanSkip Sekarang</span>
+          <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-dark-card border-t border-white/5 py-16 text-gray-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+        
+        <div class="space-y-4 md:col-span-1">
+          <a href="#" class="flex items-center gap-2 sound-btn">
+            <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-dark-base font-bold">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <span class="text-lg font-bold text-white">Pan<span class="text-brand-400">Skip</span></span>
+          </a>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Platform bypass link & shortener terdepan dengan mengutamakan privasi, efisiensi, serta kenyamanan penjelajahan web Anda.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Navigasi</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="#hero" class="sound-btn hover:text-brand-400 transition-colors">Bypass Engine</a></li>
+            <li><a href="#about" class="sound-btn hover:text-brand-400 transition-colors">Tentang Kami</a></li>
+            <li><a href="#services" class="sound-btn hover:text-brand-400 transition-colors">Layanan</a></li>
+            <li><a href="#features" class="sound-btn hover:text-brand-400 transition-colors">Keunggulan</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Legal</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="privacy.html" class="sound-btn hover:text-brand-400 transition-colors">Privacy Policy</a></li>
+            <li><a href="terms.html" class="sound-btn hover:text-brand-400 transition-colors">Terms of Service</a></li>
+            <li><a href="disclaimer.html" class="sound-btn hover:text-brand-400 transition-colors">Disclaimer</a></li>
+            <li><a href="https://wa.me/6283139863736" target="_blank" rel="noopener noreferrer" class="sound-btn hover:text-brand-400 transition-colors flex items-center gap-1.5"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Contacts</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="pt-8 border-t border-gray-800 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p>&copy; 2026 PanSkip Engine. Dibuat dengan sepenuh hati.</p>
+        <p>dibuat oleh PT Reza Jaya .</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- VANILLA JAVASCRIPT LOGIC WITH VERIFICATION MODAL & STEALTH TIMER -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Initialize Lucide Icons
+      lucide.createIcons();
+
+      // SOUND EFFECT VIA WEB AUDIO API (Clean Click Sound)
+      const playClickSound = () => {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(800, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04);
+
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start();
+          osc.stop(ctx.currentTime + 0.04);
+        } catch (e) {
+          // Fallback silence jika diproteksi autoplay browser
+        }
+      };
+
+      // PASANG EVENT LISTENERS UNTUK EFEK SUARA PADA TOMBOL/KLIKABLE
+      document.querySelectorAll("button, a, .sound-btn").forEach((elem) => {
+        elem.addEventListener("click", () => {
+          playClickSound();
+        });
+      });
+
+      // 1. LOADING SCREEN TRANSITION
+      const loadingScreen = document.getElementById("loading-screen");
+      setTimeout(() => {
+        loadingScreen.classList.add("opacity-0");
+        setTimeout(() => {
+          loadingScreen.style.display = "none";
+        }, 500);
+      }, 600);
+
+      // 2. MOBILE MENU TOGGLE
+      const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu");
+      const mobileNavLinks = document.querySelectorAll(".mobile-nav-link");
+
+      mobileMenuBtn.addEventListener("click", () => {
+        mobileMenu.classList.toggle("hidden");
+      });
+
+      mobileNavLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          mobileMenu.classList.add("hidden");
+        });
+      });
+
+      // 3. TOAST NOTIFICATION SYSTEM
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold border transition-all duration-300 transform translate-y-5 opacity-0 ${
+          type === "success" 
+            ? "bg-dark-card border-brand-500/50 text-emerald-400" 
+            : "bg-dark-card border-red-500/50 text-red-400"
+        }`;
+        
+        toast.innerHTML = `
+          <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
+          <span>${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        lucide.createIcons();
+
+        requestAnimationFrame(() => {
+          toast.classList.remove("translate-y-5", "opacity-0");
+        });
+
+        setTimeout(() => {
+          toast.classList.add("opacity-0", "translate-y-2");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // 4. VERIFICATION MODAL & PARSING SYSTEM
+      const bypassForm = document.getElementById("bypass-form");
+      const targetUrlInput = document.getElementById("target-url");
+      const btnSubmit = document.getElementById("btn-submit");
+      const resultBox = document.getElementById("result-box");
+      const resultUrl = document.getElementById("result-url");
+      const resultStatus = document.getElementById("result-status");
+      const btnCopy = document.getElementById("btn-copy");
+      const btnOpen = document.getElementById("btn-open");
+
+      const verifyModal = document.getElementById("verify-modal");
+      const btnStartVerify = document.getElementById("btn-start-verify");
+      const verifyBtnText = document.getElementById("verify-btn-text");
+
+      let pendingUrl = "";
+
+      // Trigger Modal saat form dikirim
+      bypassForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const rawUrl = targetUrlInput.value.trim();
+
+        if (!rawUrl) {
+          showToast("Masukkan URL terlebih dahulu!", "error");
+          return;
+        }
+
+        pendingUrl = rawUrl;
+        
+        // Reset state tombol verifikasi & tampilkan modal
+        btnStartVerify.disabled = false;
+        verifyBtnText.textContent = "Verifikasi";
+        btnStartVerify.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Verifikasi</span>`;
+        lucide.createIcons();
+
+        verifyModal.classList.remove("hidden");
+        verifyModal.classList.add("flex");
+      });
+
+      // Proses Verifikasi dengan Stealth Timer 8s
+      btnStartVerify.addEventListener("click", () => {
+        btnStartVerify.disabled = true;
+        // Animasi loading tanpa menampilkan teks hitung mundur (invisible 8s timer)
+        btnStartVerify.innerHTML = `<div class="w-5 h-5 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div><span>Memverifikasi...</span>`;
+        
+        setTimeout(() => {
+          // Tutup Modal
+          verifyModal.classList.add("hidden");
+          verifyModal.classList.remove("flex");
+
+          // Jalankan proses fetching API
+          executeBypass(pendingUrl);
+        }, 8000);
+      });
+
+      // Eksekusi API Kyzzz Bypass
+      async function executeBypass(rawUrl) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<div class="w-4 h-4 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div> Parsing...`;
+        resultBox.classList.add("hidden");
+
+        try {
+          const apiUrl = `https://api.kyzzz.xyz/api/bypass/bypass2?url=${encodeURIComponent(rawUrl)}&apikey=kyzz73447047341593`;
+          const response = await fetch(apiUrl, { method: "GET" });
+          const data = await response.json();
+
+          if (data && data.status && data.result && data.result.direct) {
+            const finalUrl = data.result.direct;
+            resultUrl.textContent = finalUrl;
+            btnOpen.href = finalUrl;
+            resultStatus.textContent = data.result.cached ? "Status: Bypassed (Cached)" : "Status: Bypassed (Direct)";
+            resultBox.classList.remove("hidden");
+            showToast("URL Berhasil Dibypass!");
+          } else {
+            showToast("Gagal memproses bypass. Tautan tidak didukung atau invalid!", "error");
+          }
+        } catch (error) {
+          console.error("API Error:", error);
+          showToast("Terjadi kesalahan koneksi ke server API!", "error");
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `<span>Bypass Link</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+          lucide.createIcons();
+        }
+      }
+
+      // COPY URL TO CLIPBOARD
+      btnCopy.addEventListener("click", () => {
+        const textToCopy = resultUrl.textContent;
+        if (textToCopy) {
+          navigator.clipboard.writeText(textToCopy);
+          showToast("URL berhasil disalin ke clipboard!");
+        }
+      });
+
+      // 5. FAQ ACCORDION INTERACTION WITH FIXED CHEVRON ROTATION
+      const faqBtns = document.querySelectorAll(".faq-btn");
+      faqBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const answer = btn.nextElementSibling;
+          const icon = btn.querySelector(".faq-icon");
+          
+          const isOpen = answer.classList.contains("open");
+          
+          // Close all FAQ items
+          document.querySelectorAll(".faq-answer").forEach((el) => el.classList.remove("open"));
+          document.querySelectorAll(".faq-icon").forEach((el) => {
+            el.style.transform = "rotate(0deg)";
+          });
+
+          // Toggle FAQ click
+          if (!isOpen) {
+            answer.classList.add("open");
+            if (icon) icon.style.transform = "rotate(180deg)";
+          }
+        });
+      });
+
+      // 6. INTERSECTION OBSERVER FOR REVEAL ANIMATIONS
+      const reveals = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("active");
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      reveals.forEach((el) => observer.observe(el));
+    });
+  </script>
+</body>
+</html>
