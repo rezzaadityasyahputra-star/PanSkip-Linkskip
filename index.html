@@ -182,7 +182,7 @@
 </head>
 <body class="bg-dark-base text-gray-100 font-sans antialiased selection:bg-brand-500 selection:text-white overflow-x-hidden">
 
-  <!-- NEW LOADING SCREEN -->
+  <!-- LOADING SCREEN -->
   <div id="loading-screen" class="fixed inset-0 z-[100] bg-dark-base flex flex-col items-center justify-center p-4 transition-opacity duration-500">
     <div class="relative flex items-center justify-center mb-6">
       <div class="w-24 h-24 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
@@ -203,7 +203,7 @@
   <!-- CONTAINER UNTUK EMOJI MELAYANG -->
   <div id="emoji-container" class="fixed inset-0 pointer-events-none z-40 overflow-hidden"></div>
 
-  <!-- TOMBOL GRID TOGGLE EMOJI (KIRI BAWAH) -->
+  <!-- TOMBOL TOGGLE EMOJI (KIRI BAWAH) -->
   <div class="fixed bottom-5 left-5 z-[95]">
     <button id="toggle-emoji-btn" class="sound-btn w-12 h-12 rounded-2xl bg-dark-card/80 backdrop-blur-md border border-brand-500/30 text-white flex items-center justify-center text-xl shadow-glow hover:scale-105 active:scale-95 transition-all duration-300" title="Sakelar Emoji Melayang">
       <span id="toggle-emoji-icon">☃️</span>
@@ -212,6 +212,23 @@
 
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-[90] flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- MODAL NOTIFIKASI AKUN DIHAPUS (ACCOUNT DELETED MODAL) -->
+  <div id="account-deleted-modal" class="fixed inset-0 z-[150] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300">
+    <div class="glass-card max-w-md w-full p-6 sm:p-8 rounded-2xl border border-red-500/40 text-center relative shadow-2xl">
+      <div class="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto mb-5 shadow-glow">
+        <i data-lucide="user-x" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-2">Anda Telah Dikeluarkan</h3>
+      <p class="text-xs sm:text-sm text-gray-300 leading-relaxed mb-6">
+        Akun Anda telah dihapus oleh administrator dari database Supabase. Jika Anda ingin kembali menggunakan fitur lengkap, silakan melakukan registrasi ulang.
+      </p>
+      <button id="btn-return-home" class="sound-btn w-full py-3.5 px-6 bg-brand-500 hover:bg-brand-600 active:scale-95 text-dark-base font-extrabold text-sm rounded-xl shadow-glow transition-all duration-200 flex items-center justify-center gap-2">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        <span>Kembali Ke Beranda</span>
+      </button>
+    </div>
+  </div>
 
   <!-- MODAL AUTH SUPABASE (LOGIN / REGISTER) -->
   <div id="auth-modal" class="fixed inset-0 z-[120] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300">
@@ -260,6 +277,10 @@
           <div class="flex justify-between pb-2 border-b border-gray-800">
             <span class="text-gray-400">Email</span>
             <span id="prof-email" class="text-emerald-400"></span>
+          </div>
+          <div class="flex justify-between pb-2 border-b border-gray-800">
+            <span class="text-gray-400">Status Akses</span>
+            <span class="font-bold text-brand-400">Unlimited (No Verifikasi)</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-400">User ID</span>
@@ -311,18 +332,22 @@
         <a href="#faq" class="sound-btn text-sm font-medium text-gray-300 hover:text-brand-400 transition-colors">FAQ</a>
       </nav>
 
-      <!-- DESKTOP CTA & AUTH GRID MENU (KANAN ATAS) -->
+      <!-- DESKTOP CTA & AUTH PROFILE MENU (KANAN ATAS) -->
       <div class="flex items-center gap-3">
         <div class="relative">
-          <button id="auth-grid-btn" class="sound-btn p-2.5 rounded-xl bg-dark-card border border-brand-500/30 text-brand-400 hover:text-white hover:border-brand-400 transition-all shadow-glow flex items-center justify-center" title="Menu Akun & Grid">
-            <i data-lucide="grid" class="w-5 h-5"></i>
+          <button id="auth-grid-btn" class="sound-btn p-2.5 rounded-xl bg-dark-card border border-brand-500/30 text-brand-400 hover:text-white hover:border-brand-400 transition-all shadow-glow flex items-center justify-center" title="Menu Akun & Profil">
+            <i data-lucide="user" class="w-5 h-5"></i>
           </button>
           
-          <!-- NOTIFIKASI BELUM LOGIN (BADGE BANNER) -->
-          <div id="auth-notif-badge" class="absolute right-0 top-12 w-60 p-3 bg-dark-card border border-brand-500/40 rounded-xl shadow-2xl flex flex-col gap-2 transition-all duration-300 z-50">
+          <!-- NOTIFIKASI BELUM LOGIN / STATUS LIMIT -->
+          <div id="auth-notif-badge" class="absolute right-0 top-12 w-64 p-3 bg-dark-card border border-brand-500/40 rounded-xl shadow-2xl flex flex-col gap-2 transition-all duration-300 z-50">
             <div class="flex items-center gap-2 text-xs font-semibold text-gray-300">
               <i data-lucide="user-check" class="w-4 h-4 text-brand-400 shrink-0"></i>
               <span id="badge-text">Belum punya akun? Daftar</span>
+            </div>
+            <div id="guest-limit-info" class="text-[11px] text-gray-400 border-t border-gray-800 pt-1.5 flex justify-between items-center">
+              <span>Sisa Kuota Gratis:</span>
+              <span id="nav-quota-count" class="font-bold text-brand-400">7/7</span>
             </div>
             <button id="badge-auth-action" class="w-full py-1.5 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/40 text-brand-400 font-bold text-[11px] rounded-lg transition-colors">
               Login / Register
@@ -373,9 +398,16 @@
           Bypass Shortlink & Iklan <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-emerald-300">Tanpa Menunggu</span>
         </h1>
 
-        <p class="text-base sm:text-xl text-gray-400 font-normal leading-relaxed mb-10">
+        <p class="text-base sm:text-xl text-gray-400 font-normal leading-relaxed mb-6">
           PanSkip membantu Anda melompati rantai iklan yang membingungkan, timer jebakan, dan captcha langsung menuju URL asli tujuan Anda dengan aman dan kilat.
         </p>
+
+        <!-- INFORMASI BADGE KUOTA GUEST / UNLIMITED MEMBER -->
+        <div id="quota-badge-hero" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-card border border-gray-800 text-xs mb-6">
+          <span class="text-gray-400">Kuota Hari Ini:</span>
+          <span id="quota-display" class="font-bold text-brand-400">7 / 7 Kesempatan</span>
+          <span class="text-gray-500 text-[10px]">(Reset tiap 14:00 WIB)</span>
+        </div>
 
         <!-- INTERACTIVE BYPASS BOX -->
         <div class="glass-card p-4 sm:p-6 rounded-2xl max-w-2xl mx-auto shadow-2xl mb-8">
@@ -628,7 +660,7 @@
           </button>
           <div class="faq-answer px-6">
             <p class="pb-5 text-gray-400 text-sm leading-relaxed border-t border-gray-800/60 pt-4">
-              PanSkip 100% gratis untuk penggunaan individu melalui antarmuka web.
+              PanSkip 100% gratis. Pengguna tamu mendapatkan kuota 7x bypass per hari (di-reset jam 14.00 WIB), sedangkan pengguna terdaftar menikmati bypass tanpa batas.
             </p>
           </div>
         </div>
@@ -697,7 +729,7 @@
     </div>
   </footer>
 
-  <!-- VANILLA JAVASCRIPT LOGIC INTEGRATED WITH SUPABASE -->
+  <!-- VANILLA JAVASCRIPT LOGIC INTEGRATED WITH SUPABASE & REALTIME DELETION LISTENER -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // 0. INISIALISASI SUPABASE SDK DENGAN KREDENSIAL LENGKAP
@@ -735,6 +767,57 @@
       document.querySelectorAll("button, a, .sound-btn").forEach((elem) => {
         elem.addEventListener("click", () => playClickSound());
       });
+
+      // ----------------------------------------------------
+      // SISTEM LIMIT GUEST 7X BYPASS & RESET 14:00 WIB
+      // ----------------------------------------------------
+      const MAX_GUEST_LIMIT = 7;
+
+      function getCurrentResetCycleTimestamp() {
+        const now = new Date();
+        const resetToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0, 0);
+        if (now < resetToday) {
+          resetToday.setDate(resetToday.getDate() - 1);
+        }
+        return resetToday.getTime();
+      }
+
+      function getGuestUsage() {
+        const cycle = getCurrentResetCycleTimestamp();
+        const storedCycle = parseInt(localStorage.getItem("panskip_guest_cycle") || "0");
+        if (storedCycle < cycle) {
+          localStorage.setItem("panskip_guest_cycle", cycle.toString());
+          localStorage.setItem("panskip_guest_usage", "0");
+          return 0;
+        }
+        return parseInt(localStorage.getItem("panskip_guest_usage") || "0");
+      }
+
+      function incrementGuestUsage() {
+        const currentUsage = getGuestUsage();
+        const newUsage = currentUsage + 1;
+        localStorage.setItem("panskip_guest_usage", newUsage.toString());
+        updateQuotaDisplay();
+        return newUsage;
+      }
+
+      function updateQuotaDisplay() {
+        const quotaDisplay = document.getElementById("quota-display");
+        const navQuotaCount = document.getElementById("nav-quota-count");
+        const guestLimitInfo = document.getElementById("guest-limit-info");
+
+        if (currentUser) {
+          if (quotaDisplay) quotaDisplay.textContent = "Unlimited ⚡";
+          if (navQuotaCount) navQuotaCount.textContent = "Unlimited";
+          if (guestLimitInfo) guestLimitInfo.classList.add("hidden");
+        } else {
+          const used = getGuestUsage();
+          const remaining = Math.max(0, MAX_GUEST_LIMIT - used);
+          if (quotaDisplay) quotaDisplay.textContent = `${remaining} / ${MAX_GUEST_LIMIT} Kesempatan`;
+          if (navQuotaCount) navQuotaCount.textContent = `${remaining}/${MAX_GUEST_LIMIT}`;
+          if (guestLimitInfo) guestLimitInfo.classList.remove("hidden");
+        }
+      }
 
       // 1. LOADING SCREEN LOGIC
       const loadingScreen = document.getElementById("loading-screen");
@@ -894,7 +977,7 @@
         }, 3000);
       }
 
-      // 4. SUPABASE AUTH & GRID MENU KANAN ATAS
+      // 4. SUPABASE AUTH & PROFIL MENU KANAN ATAS
       const authGridBtn = document.getElementById("auth-grid-btn");
       const authNotifBadge = document.getElementById("auth-notif-badge");
       const badgeText = document.getElementById("badge-text");
@@ -913,10 +996,15 @@
       const userProfileDisplay = document.getElementById("user-profile-display");
       const btnAuthLogout = document.getElementById("btn-auth-logout");
 
+      // MODAL DELETED ELEMENTS
+      const accountDeletedModal = document.getElementById("account-deleted-modal");
+      const btnReturnHome = document.getElementById("btn-return-home");
+
       let isRegisterMode = false;
       let currentUser = null;
+      let isManualLogout = false;
 
-      // Toggle Popup Notif Badge saat Tombol Grid diklik
+      // Toggle Popup Notif Badge saat Tombol Profil diklik
       authGridBtn.addEventListener("click", () => {
         authNotifBadge.classList.toggle("hidden");
       });
@@ -977,7 +1065,7 @@
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             
-            showToast("Login berhasil!");
+            showToast("Login berhasil! Nikmati akses Unlimited.");
             updateUserUI(data.user);
             authModal.classList.add("hidden");
             authModal.classList.remove("flex");
@@ -990,7 +1078,7 @@
         }
       });
 
-      // Update Tampilan UI Setelah Auth
+      // Update Tampilan UI Setelah Auth State Berubah
       async function updateUserUI(user) {
         currentUser = user;
         if (user) {
@@ -1008,7 +1096,7 @@
           authToggleBox.classList.add("hidden");
           userProfileDisplay.classList.remove("hidden");
           authModalTitle.textContent = "Profil Pengguna";
-          authModalSub.textContent = "Informasi akun terhubung";
+          authModalSub.textContent = "Akses Unlimited Aktif Tanpa Verifikasi";
         } else {
           badgeText.textContent = "Belum punya akun? Daftar";
           badgeAuthAction.textContent = "Login / Register";
@@ -1017,23 +1105,67 @@
           authToggleBox.classList.remove("hidden");
           userProfileDisplay.classList.add("hidden");
         }
+        updateQuotaDisplay();
       }
 
-      // Logout
+      // Logout Manual
       btnAuthLogout.addEventListener("click", async () => {
+        isManualLogout = true;
         await supabase.auth.signOut();
         currentUser = null;
         updateUserUI(null);
-        showToast("Berhasil logout!");
+        showToast("Berhasil logout! Kembali ke mode batasan kuota.");
         authModal.classList.add("hidden");
         authModal.classList.remove("flex");
+        setTimeout(() => { isManualLogout = false; }, 1000);
       });
 
-      // Cek Session saat Halaman Dimuat
+      // Tombol 'Kembali Ke Beranda' di Modal Akun Dihapus
+      btnReturnHome.addEventListener("click", () => {
+        accountDeletedModal.classList.add("hidden");
+        accountDeletedModal.classList.remove("flex");
+        // Reset form auth ke mode register agar bisa daftar lagi jika mau
+        if (!isRegisterMode) {
+          btnAuthToggle.click();
+        }
+      });
+
+      // DETEKSI REALTIME: MENDENGARKAN STATUS HAPUS AKUN DARI SUPABASE
+      supabase.auth.onAuthStateChange((event, session) => {
+        if ((event === 'SIGNED_OUT' || event === 'USER_DELETED') && currentUser && !isManualLogout) {
+          currentUser = null;
+          updateUserUI(null);
+          
+          // Tutup modal auth bila sedang terbuka
+          authModal.classList.add("hidden");
+          authModal.classList.remove("flex");
+
+          // Tampilkan Modal Peringatan Bahwa Akun Telah Dikeluarkan/Dihapus
+          accountDeletedModal.classList.remove("hidden");
+          accountDeletedModal.classList.add("flex");
+        }
+      });
+
+      // Cek Session saat Halaman Pertama Kali Dimuat
       async function checkUserSession() {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Verifikasi apakah user aktif benar-benar ada di database
         if (session?.user) {
-          updateUserUI(session.user);
+          const { data: userCheck, error: userError } = await supabase.auth.getUser();
+          if (userError || !userCheck?.user) {
+            // Jika user di Supabase sudah dihapus admin saat app dalam posisi offline/reload
+            await supabase.auth.signOut();
+            currentUser = null;
+            updateUserUI(null);
+            
+            accountDeletedModal.classList.remove("hidden");
+            accountDeletedModal.classList.add("flex");
+          } else {
+            updateUserUI(session.user);
+          }
+        } else {
+          updateQuotaDisplay();
         }
       }
       checkUserSession();
@@ -1046,7 +1178,7 @@
       mobileMenuBtn.addEventListener("click", () => mobileMenu.classList.toggle("hidden"));
       mobileNavLinks.forEach((link) => link.addEventListener("click", () => mobileMenu.classList.add("hidden")));
 
-      // 6. VERIFICATION MODAL & PARSING SYSTEM
+      // 6. LOGIKA PARSING BYPASS DENGAN ATURAN LIMIT & MEMBER
       const bypassForm = document.getElementById("bypass-form");
       const targetUrlInput = document.getElementById("target-url");
       const btnSubmit = document.getElementById("btn-submit");
@@ -1071,16 +1203,35 @@
           return;
         }
 
-        pendingUrl = rawUrl;
-        btnStartVerify.disabled = false;
-        verifyBtnText.textContent = "Verifikasi";
-        btnStartVerify.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Verifikasi</span>`;
-        lucide.createIcons();
+        // 1. CEK LIMIT KUOTA JIKA BELUM LOGIN
+        if (!currentUser) {
+          const used = getGuestUsage();
+          if (used >= MAX_GUEST_LIMIT) {
+            showToast("Batas 7x kuota gratis hari ini habis! Silakan Login untuk Bypass Unlimited.", "error");
+            authModal.classList.remove("hidden");
+            authModal.classList.add("flex");
+            return;
+          }
+        }
 
-        verifyModal.classList.remove("hidden");
-        verifyModal.classList.add("flex");
+        pendingUrl = rawUrl;
+
+        // 2. JIKA SUDAH LOGIN: TANPA VERIFIKASI (LANGSUNG BYPASS INSTAN)
+        if (currentUser) {
+          executeBypass(pendingUrl);
+        } else {
+          // JIKA TAMU: MUNCULKAN MODAL VERIFIKASI 8 DETIK
+          btnStartVerify.disabled = false;
+          verifyBtnText.textContent = "Verifikasi";
+          btnStartVerify.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Verifikasi</span>`;
+          lucide.createIcons();
+
+          verifyModal.classList.remove("hidden");
+          verifyModal.classList.add("flex");
+        }
       });
 
+      // Proses Tombol Verifikasi (Untuk Guest)
       btnStartVerify.addEventListener("click", () => {
         btnStartVerify.disabled = true;
         btnStartVerify.innerHTML = `<div class="w-5 h-5 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div><span>Memverifikasi...</span>`;
@@ -1088,10 +1239,13 @@
         setTimeout(() => {
           verifyModal.classList.add("hidden");
           verifyModal.classList.remove("flex");
+          
+          incrementGuestUsage();
           executeBypass(pendingUrl);
         }, 8000);
       });
 
+      // Fungsi Eksekusi Bypass API
       async function executeBypass(rawUrl) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = `<div class="w-4 h-4 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div> Parsing...`;
