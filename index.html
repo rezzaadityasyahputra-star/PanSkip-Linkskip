@@ -433,6 +433,61 @@
           PanSkip membantu Anda melompati rantai iklan yang membingungkan, timer jebakan, dan captcha langsung menuju URL asli tujuan Anda dengan aman dan kilat.
         </p>
 
+        <!-- DASHBOARD HORIZONTAL USER & STATS INFO -->
+        <div class="reveal my-8 w-full overflow-hidden">
+          <div class="glass-card p-4 sm:p-5 rounded-2xl border border-brand-500/20 bg-dark-card/60 backdrop-blur-md shadow-glow">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-800/80">
+              
+              <!-- ITEM 1: USER ONLINE (SUPABASE REALTIME PRESENCE) -->
+              <div class="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pr-4">
+                <div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-brand-500/10 border border-brand-500/30 text-brand-400 shrink-0">
+                  <i data-lucide="users" class="w-5 h-5"></i>
+                  <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  </span>
+                </div>
+                <div class="text-left overflow-hidden">
+                  <span class="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">Pengguna Aktif</span>
+                  <div class="flex items-center gap-2">
+                    <span id="dash-user-online" class="text-lg font-black text-white tracking-tight">0</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">ONLINE</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ITEM 2: TOTAL KUNJUNGAN WEB (REAL DATABASE VISITOR LOGS) -->
+              <div class="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                  <i data-lucide="eye" class="w-5 h-5"></i>
+                </div>
+                <div class="text-left overflow-hidden">
+                  <span class="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">Total Kunjungan Web</span>
+                  <div class="flex items-center gap-2">
+                    <span id="dash-total-visits" class="text-lg font-black text-white tracking-tight">0</span>
+                    <span class="text-[10px] text-gray-400 font-medium">(Tamu & Member)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ITEM 3: TOTAL AKUN DIBUAT (REAL DATABASE PROFILES COUNT) -->
+              <div class="flex items-center gap-3.5 pt-3 sm:pt-0 sm:pl-4">
+                <div class="w-11 h-11 rounded-xl bg-brand-500/10 border border-brand-500/30 text-brand-400 flex items-center justify-center shrink-0">
+                  <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div class="text-left overflow-hidden">
+                  <span class="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">Total Akun Terdaftar</span>
+                  <div class="flex items-center gap-2">
+                    <span id="dash-total-accounts" class="text-lg font-black text-white tracking-tight">0</span>
+                    <span id="dash-login-sessions" class="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 font-bold border border-brand-500/30">Verified</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
         <!-- INFORMASI BADGE KUOTA GUEST / UNLIMITED MEMBER -->
         <div id="quota-badge-hero" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-card border border-gray-800 text-xs mb-6">
           <span class="text-gray-400">Kuota Hari Ini:</span>
@@ -760,7 +815,7 @@
     </div>
   </footer>
 
-  <!-- VANILLA JAVASCRIPT LOGIC INTEGRATED WITH SUPABASE & REALTIME DELETION/KICK LISTENER -->
+  <!-- VANILLA JAVASCRIPT INTEGRATION WITH SUPABASE REALTIME & STATS -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // 0. INISIALISASI SUPABASE SDK DENGAN KREDENSIAL LENGKAP
@@ -798,6 +853,84 @@
       document.querySelectorAll("button, a, .sound-btn").forEach((elem) => {
         elem.addEventListener("click", () => playClickSound());
       });
+
+      // ----------------------------------------------------
+      // SUPABASE REALTIME TRACKER & STATISTIK ASLI
+      // ----------------------------------------------------
+      function getVisitorSessionId() {
+        let sid = localStorage.getItem('panskip_session_id');
+        if (!sid) {
+          sid = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now();
+          localStorage.setItem('panskip_session_id', sid);
+        }
+        return sid;
+      }
+
+      // 1. Catat Log Kunjungan ke Database
+      async function logVisitToSupabase(user) {
+        try {
+          await supabase.from('visitor_logs').insert([
+            {
+              user_id: user ? user.id : null,
+              session_id: getVisitorSessionId()
+            }
+          ]);
+        } catch (err) {
+          console.error("Gagal mencatat log kunjungan:", err);
+        }
+      }
+
+      // 2. Lacak User Online via Supabase Realtime Presence
+      function initRealtimeOnlineTracker(user) {
+        const channel = supabase.channel('online-users-panskip', {
+          config: { presence: { key: getVisitorSessionId() } }
+        });
+
+        channel.on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState();
+          const totalOnline = Object.keys(state).length;
+
+          const onlineElem = document.getElementById("dash-user-online");
+          if (onlineElem) onlineElem.textContent = totalOnline.toLocaleString("id-ID");
+        });
+
+        channel.subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({
+              user_id: user ? user.id : 'guest',
+              email: user ? user.email : 'Pengunjung Tanpa Akun',
+              online_at: new Date().toISOString()
+            });
+          }
+        });
+      }
+
+      // 3. Ambil Angka Statistik Asli dari Database Supabase
+      async function loadSupabaseDashboardStats() {
+        try {
+          // Total Kunjungan Web
+          const { count: totalVisits } = await supabase
+            .from('visitor_logs')
+            .select('*', { count: 'exact', head: true });
+
+          const visitElem = document.getElementById("dash-total-visits");
+          if (visitElem && totalVisits !== null) {
+            visitElem.textContent = totalVisits.toLocaleString("id-ID");
+          }
+
+          // Total Akun Terdaftar
+          const { count: totalAccounts } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+
+          const accountElem = document.getElementById("dash-total-accounts");
+          if (accountElem && totalAccounts !== null) {
+            accountElem.textContent = totalAccounts.toLocaleString("id-ID");
+          }
+        } catch (err) {
+          console.error("Gagal memuat statistik dari Supabase:", err);
+        }
+      }
 
       // ----------------------------------------------------
       // SISTEM REALTIME KICK & BLOCK MONITORING
@@ -1033,12 +1166,12 @@
             ? "bg-dark-card border-brand-500/50 text-emerald-400" 
             : "bg-dark-card border-red-500/50 text-red-400"
         }`;
-        
+
         toast.innerHTML = `
           <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i>
           <span>${message}</span>
         `;
-        
+
         container.appendChild(toast);
         lucide.createIcons();
 
@@ -1128,18 +1261,19 @@
 
         try {
           if (isRegisterMode) {
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabase.auth.signUp({ 
+              email, 
+              password,
+              options: { data: { full_name: fullname } }
+            });
             if (error) throw error;
 
-            if (data.user) {
-              await supabase.from("profiles").insert([{ id: data.user.id, full_name: fullname }]);
-            }
             showToast("Registrasi berhasil! Silakan login.");
             btnAuthToggle.click();
           } else {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
-            
+
             showToast("Login berhasil! Nikmati akses Unlimited.");
             updateUserUI(data.user);
             authModal.classList.add("hidden");
@@ -1159,12 +1293,12 @@
         if (user) {
           // Ambil Profil dari tabel Supabase
           const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
-          
-          document.getElementById("prof-name").textContent = profile?.full_name || "Pengguna PanSkip";
+
+          document.getElementById("prof-name").textContent = profile?.full_name || user.user_metadata?.full_name || "Pengguna PanSkip";
           document.getElementById("prof-email").textContent = user.email;
           document.getElementById("prof-id").textContent = user.id;
 
-          badgeText.textContent = `Halo, ${profile?.full_name || 'Pengguna'}`;
+          badgeText.textContent = `Halo, ${profile?.full_name || user.user_metadata?.full_name || 'Pengguna'}`;
           badgeAuthAction.textContent = "Buka Profil";
 
           supabaseAuthForm.classList.add("hidden");
@@ -1212,7 +1346,7 @@
         if ((event === 'SIGNED_OUT' || event === 'USER_DELETED') && currentUser && !isManualLogout) {
           currentUser = null;
           updateUserUI(null);
-          
+
           authModal.classList.add("hidden");
           authModal.classList.remove("flex");
 
@@ -1223,15 +1357,21 @@
 
       // Cek Session saat Halaman Pertama Kali Dimuat
       async function checkUserSession() {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (session?.user) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user || null;
+
+        // Catat log kunjungan dan jalankan tracker Realtime Presence
+        logVisitToSupabase(user);
+        initRealtimeOnlineTracker(user);
+        loadSupabaseDashboardStats();
+
+        if (user) {
           const { data: userCheck, error: userError } = await supabase.auth.getUser();
           if (userError || !userCheck?.user) {
             await supabase.auth.signOut();
             currentUser = null;
             updateUserUI(null);
-            
+
             accountDeletedModal.classList.remove("hidden");
             accountDeletedModal.classList.add("flex");
           } else {
@@ -1308,11 +1448,11 @@
       btnStartVerify.addEventListener("click", () => {
         btnStartVerify.disabled = true;
         btnStartVerify.innerHTML = `<div class="w-5 h-5 border-2 border-dark-base border-t-transparent rounded-full animate-spin"></div><span>Memverifikasi...</span>`;
-        
+
         setTimeout(() => {
           verifyModal.classList.add("hidden");
           verifyModal.classList.remove("flex");
-          
+
           incrementGuestUsage();
           executeBypass(pendingUrl);
         }, 8000);
@@ -1342,7 +1482,7 @@
         } catch (error) {
           console.error("API Error:", error);
           showToast("Terjadi kesalahan koneksi ke server API!", "error");
-        } finally {
+        } fontally {
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = `<span>Bypass Link</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
           lucide.createIcons();
@@ -1364,7 +1504,7 @@
           const answer = btn.nextElementSibling;
           const icon = btn.querySelector(".faq-icon");
           const isOpen = answer.classList.contains("open");
-          
+
           document.querySelectorAll(".faq-answer").forEach((el) => el.classList.remove("open"));
           document.querySelectorAll(".faq-icon").forEach((el) => el.style.transform = "rotate(0deg)");
 
