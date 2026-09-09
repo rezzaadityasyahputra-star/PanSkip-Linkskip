@@ -1482,7 +1482,7 @@
         } catch (error) {
           console.error("API Error:", error);
           showToast("Terjadi kesalahan koneksi ke server API!", "error");
-        } fontally {
+        } finally {
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = `<span>Bypass Link</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
           lucide.createIcons();
