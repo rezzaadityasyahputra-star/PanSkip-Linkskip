@@ -374,7 +374,7 @@
             </div>
             <div id="guest-limit-info" class="text-[11px] text-gray-400 border-t border-gray-800 pt-1.5 flex justify-between items-center">
               <span>Sisa Kuota Gratis:</span>
-              <span id="nav-quota-count" class="font-bold text-brand-400">7/7</span>
+              <span id="nav-quota-count" class="font-bold text-brand-400">2/2</span>
             </div>
             <button id="badge-auth-action" class="w-full py-1.5 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/40 text-brand-400 font-bold text-[11px] rounded-lg transition-colors">
               Login / Register
@@ -491,8 +491,8 @@
         <!-- INFORMASI BADGE KUOTA GUEST / UNLIMITED MEMBER -->
         <div id="quota-badge-hero" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-card border border-gray-800 text-xs mb-6">
           <span class="text-gray-400">Kuota Hari Ini:</span>
-          <span id="quota-display" class="font-bold text-brand-400">7 / 7 Kesempatan</span>
-          <span class="text-gray-500 text-[10px]">(Reset tiap 14:00 WIB)</span>
+          <span id="quota-display" class="font-bold text-brand-400">2 / 2 Kesempatan</span>
+          <span class="text-gray-500 text-[10px]">(Reset tiap 00:00 WIB)</span>
         </div>
 
         <!-- INTERACTIVE BYPASS BOX -->
@@ -746,7 +746,7 @@
           </button>
           <div class="faq-answer px-6">
             <p class="pb-5 text-gray-400 text-sm leading-relaxed border-t border-gray-800/60 pt-4">
-              PanSkip 100% gratis. Pengguna tamu mendapatkan kuota 7x bypass per hari (di-reset jam 14.00 WIB), sedangkan pengguna terdaftar menikmati bypass tanpa batas.
+              PanSkip 100% gratis. Pengguna tamu mendapatkan kuota 2x bypass per hari (di-reset jam 00:00 WIB), sedangkan pengguna terdaftar menikmati bypass tanpa batas.
             </p>
           </div>
         </div>
@@ -977,16 +977,13 @@
       }
 
       // ----------------------------------------------------
-      // SISTEM LIMIT GUEST 7X BYPASS & RESET 14:00 WIB
+      // SISTEM LIMIT GUEST 2X BYPASS & RESET 00:00 WIB
       // ----------------------------------------------------
-      const MAX_GUEST_LIMIT = 7;
+      const MAX_GUEST_LIMIT = 2;
 
       function getCurrentResetCycleTimestamp() {
         const now = new Date();
-        const resetToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0, 0);
-        if (now < resetToday) {
-          resetToday.setDate(resetToday.getDate() - 1);
-        }
+        const resetToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
         return resetToday.getTime();
       }
 
@@ -1420,7 +1417,7 @@
         if (!currentUser) {
           const used = getGuestUsage();
           if (used >= MAX_GUEST_LIMIT) {
-            showToast("Batas 7x kuota gratis hari ini habis! Silakan Login untuk Bypass Unlimited.", "error");
+            showToast("Batas 2x kuota gratis hari ini habis! Silakan Login untuk Bypass Unlimited.", "error");
             authModal.classList.remove("hidden");
             authModal.classList.add("flex");
             return;
