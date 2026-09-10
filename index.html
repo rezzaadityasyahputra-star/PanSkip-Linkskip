@@ -456,16 +456,16 @@
                 </div>
               </div>
 
-              <!-- ITEM 2: TOTAL KUNJUNGAN WEB (REAL DATABASE VISITOR LOGS) -->
+              <!-- ITEM 2: KUNJUNGAN HARI INI (RESET OTOMATIS TEPAT JAM 00:00 WIB) -->
               <div class="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4">
                 <div class="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
                   <i data-lucide="eye" class="w-5 h-5"></i>
                 </div>
                 <div class="text-left overflow-hidden">
-                  <span class="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">Total Kunjungan Web</span>
+                  <span class="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">Kunjungan Hari Ini</span>
                   <div class="flex items-center gap-2">
                     <span id="dash-total-visits" class="text-lg font-black text-white tracking-tight">0</span>
-                    <span class="text-[10px] text-gray-400 font-medium">(Tamu & Member)</span>
+                    <span class="text-[10px] text-gray-400 font-medium">(Reset 00:00 WIB)</span>
                   </div>
                 </div>
               </div>
@@ -905,17 +905,35 @@
         });
       }
 
-      // 3. Ambil Angka Statistik Asli dari Database Supabase
+      // Helper untuk mendapatkan ISO String jam 00:00:00 WIB hari ini
+      function getTodayStartWIBISO() {
+        const now = new Date();
+        const wibOffset = 7 * 60; // offset WIB (+7) dalam menit
+        const localOffset = now.getTimezoneOffset(); // offset lokal pengguna dalam menit
+        
+        const wibTime = new Date(now.getTime() + (wibOffset + localOffset) * 60000);
+        wibTime.setHours(0, 0, 0, 0); // Set tepat jam 00:00:00 WIB
+        
+        const startOfDayUTC = new Date(wibTime.getTime() - (wibOffset + localOffset) * 60000);
+        return startOfDayUTC.toISOString();
+      }
+
+      // 3. Ambil Angka Statistik Asli dari Database Supabase (HANYA KUNJUNGAN HARI INI)
       async function loadSupabaseDashboardStats() {
         try {
-          // Total Kunjungan Web
-          const { count: totalVisits } = await supabase
+          const todayStartISO = getTodayStartWIBISO();
+
+          // Total Kunjungan Web Hari Ini (Reset Otomatis Saat Lewat Jam 00:00 WIB)
+          const { count: totalVisitsToday, error: visitErr } = await supabase
             .from('visitor_logs')
-            .select('*', { count: 'exact', head: true });
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', todayStartISO);
 
           const visitElem = document.getElementById("dash-total-visits");
-          if (visitElem && totalVisits !== null) {
-            visitElem.textContent = totalVisits.toLocaleString("id-ID");
+          if (visitElem && totalVisitsToday !== null && !visitErr) {
+            visitElem.textContent = totalVisitsToday.toLocaleString("id-ID");
+          } else if (visitElem) {
+            visitElem.textContent = "0";
           }
 
           // Total Akun Terdaftar
@@ -931,6 +949,27 @@
           console.error("Gagal memuat statistik dari Supabase:", err);
         }
       }
+
+      // Menjadwalkan pemicu reset otomatis tepat di jam 00:00 WIB
+      function scheduleMidnightReset() {
+        const now = new Date();
+        const wibOffset = 7 * 60;
+        const localOffset = now.getTimezoneOffset();
+        const wibNow = new Date(now.getTime() + (wibOffset + localOffset) * 60000);
+        
+        const nextMidnight = new Date(wibNow);
+        nextMidnight.setHours(24, 0, 0, 0); // Targetkan jam 12 malam berikutnya
+        
+        const timeToMidnight = nextMidnight.getTime() - wibNow.getTime();
+
+        setTimeout(() => {
+          loadSupabaseDashboardStats();
+          scheduleMidnightReset();
+        }, timeToMidnight);
+      }
+
+      // Jalankan scheduler jam 12 malam
+      scheduleMidnightReset();
 
       // ----------------------------------------------------
       // SISTEM REALTIME KICK & BLOCK MONITORING
