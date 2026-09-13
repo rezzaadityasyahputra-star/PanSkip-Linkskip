@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terms of Service — PanSkip Engine</title>
-  <meta name="description" content="Halaman Syarat dan Ketentuan Layanan Penggunaan Platform PanSkip Engine." />
   
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/nqPTyK8G/image.png" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co.com/nqPTyK8G/image.png" />
+
+  <title>PanSkip — Pemeliharaan Sistem (Maintenance)</title>
+
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -23,14 +27,9 @@
           },
           colors: {
             brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
               400: '#4ade80',
               500: '#22c55e',
               600: '#16a34a',
-              700: '#15803d',
-              900: '#14532d',
-              950: '#052e16',
             },
             dark: {
               base: '#0b0f17',
@@ -39,8 +38,8 @@
             }
           },
           boxShadow: {
-            'glow': '0 0 25px -5px rgba(34, 197, 94, 0.4)',
-            'glow-lg': '0 0 50px -10px rgba(34, 197, 94, 0.3)',
+            'glow': '0 0 35px -5px rgba(34, 197, 94, 0.35)',
+            'glow-amber': '0 0 35px -5px rgba(245, 158, 11, 0.35)',
           }
         }
       }
@@ -51,235 +50,106 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* TOUCH EXPERIENCE & RESET ENHANCEMENTS */
-    button,
-    a,
-    input,
-    .card,
-    .clickable,
-    [role="button"] {
-      -webkit-tap-highlight-color: transparent !important;
-      -webkit-touch-callout: none !important;
-      user-select: none;
-    }
-
-    button:focus,
-    a:focus {
-      outline: none;
-    }
-
-    button:focus-visible,
-    a:focus-visible {
-      outline: 2px solid #22c55e;
-      outline-offset: 3px;
-    }
-
-    button:active,
-    a:active,
-    .clickable:active {
-      transform: scale(0.97);
-    }
-
-    /* GLASSMORPHISM & CUSTOM UI EFFECTS */
-    .glass-header {
-      background: rgba(11, 15, 23, 0.75);
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-    }
-
-    .glass-card {
-      background: rgba(17, 24, 39, 0.6);
-      backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    /* ANIMATED GRADIENT BACKGROUND */
     .hero-bg {
-      background: radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.12) 0%, rgba(11, 15, 23, 1) 70%);
+      background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.12) 0%, rgba(245, 158, 11, 0.05) 45%, rgba(11, 15, 23, 1) 75%);
     }
 
-    /* REVEAL ANIMATIONS */
-    .reveal {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Pulse Gear Animation */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
-
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
+    .animate-spin-slow {
+      animation: spin-slow 12s linear infinite;
     }
   </style>
 </head>
-<body class="bg-dark-base text-gray-100 font-sans antialiased selection:bg-brand-500 selection:text-white overflow-x-hidden min-h-screen flex flex-col justify-between">
+<body class="bg-dark-base text-gray-100 font-sans antialiased min-h-screen flex items-center justify-center p-4 relative overflow-hidden hero-bg">
 
-  <!-- HEADER / NAVBAR -->
-  <header class="fixed top-0 left-0 right-0 z-50 glass-header border-b border-white/5 py-4">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+  <!-- BACKGROUND GLOW DEKORATIF -->
+  <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-10 right-10 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- MAIN MAINTENANCE CARD -->
+  <main class="max-w-xl w-full text-center relative z-10">
+    <div class="glass-card p-8 sm:p-12 rounded-3xl border border-amber-500/30 shadow-2xl relative overflow-hidden">
       
-      <!-- LOGO (TIDAK REDIRECT) -->
-      <a href="javascript:void(0)" class="flex items-center gap-2 group cursor-default">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-dark-base font-extrabold shadow-glow transition-transform duration-300">
-          <i data-lucide="shield-check" class="w-6 h-6 stroke-[2.5]"></i>
-        </div>
-        <span class="text-xl font-extrabold tracking-tight text-white">Pan<span class="text-brand-400">Skip</span></span>
-      </a>
-
-    </div>
-  </header>
-
-  <!-- MAIN CONTENT: TERMS OF SERVICE SECTION -->
-  <main class="relative pt-32 pb-20 hero-bg flex-grow">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      
-      <!-- TITLE BOX -->
-      <div class="text-center mb-12 reveal">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs sm:text-sm font-semibold mb-4">
-          <i data-lucide="file-text" class="w-4 h-4"></i>
-          <span>Ketentuan Penggunaan</span>
-        </div>
-        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-          Terms of <span class="text-brand-400">Service</span>
-        </h1>
-        <p class="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto">
-          Aturan dan ketentuan penggunaan layanan otomatisasi bypass URL yang berlaku di platform PanSkip Engine.
-        </p>
-      </div>
-
-      <!-- TERMS CONTENT CARD -->
-      <div class="glass-card p-6 sm:p-10 rounded-3xl border border-gray-800 shadow-2xl space-y-8 text-gray-300 text-sm leading-relaxed reveal">
+      <!-- LOGO PANSKIP DENGAN INDIKATOR PERBAIKAN -->
+      <div class="relative w-28 h-28 mx-auto mb-8 flex items-center justify-center">
+        <!-- Ring Putar Dekoratif -->
+        <div class="absolute inset-0 rounded-3xl border-2 border-dashed border-amber-500/40 animate-spin-slow"></div>
         
-        <!-- ITEM 1 -->
-        <section class="space-y-2">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-5 h-5 text-brand-400 shrink-0"></i>
-            1. Penerimaan Ketentuan
-          </h2>
-          <p class="pl-7 text-gray-400">
-            Dengan mengakses dan menggunakan platform PanSkip, Anda secara otomatis menyetujui seluruh syarat dan ketentuan layanan ini. Jika Anda tidak menyetujui salah satu poin di dalamnya, mohon untuk tidak melanjutkan penggunaan layanan kami.
-          </p>
-        </section>
-
-        <hr class="border-gray-800/80">
-
-        <!-- ITEM 2 -->
-        <section class="space-y-2">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="zap" class="w-5 h-5 text-brand-400 shrink-0"></i>
-            2. Batasan Penggunaan Layanan
-          </h2>
-          <p class="pl-7 text-gray-400">
-            Layanan PanSkip disediakan khusus untuk kemudahan aksesibilitas pribadi. Dilarang keras menggunakan sistem ini secara berlebihan melalui bot spam otomatisation, eksploitasi API tanpa izin, atau upaya melumpuhkan infrastruktur server PanSkip.
-          </p>
-        </section>
-
-        <hr class="border-gray-800/80">
-
-        <!-- ITEM 3 -->
-        <section class="space-y-2">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="shield-alert" class="w-5 h-5 text-brand-400 shrink-0"></i>
-            3. Larangan Konten Ilegal
-          </h2>
-          <p class="pl-7 text-gray-400">
-            Pengguna tidak diperkenankan memasukkan tautan (shortlink) yang mengarah pada situs pemerasan (phishing), penyebaran virus/malware, konten judi ilegal, pornografi anak, atau aktivitas melanggar hukum lainnya.
-          </p>
-        </section>
-
-        <hr class="border-gray-800/80">
-
-        <!-- ITEM 4 -->
-        <section class="space-y-2">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">
-            <i data-lucide="refresh-cw" class="w-5 h-5 text-brand-400 shrink-0"></i>
-            4. Perubahan & Ketersediaan Layanan
-          </h2>
-          <p class="pl-7 text-gray-400">
-            Kami berhak untuk mengubah, memperbarui, atau menghentikan fitur tertentu dalam layanan PanSkip sewaktu-waktu tanpa pemberitahuan sebelumnya demi menjaga performa dan keamanan sistem.
-          </p>
-        </section>
-
-        <!-- BOTTOM NOTE -->
-        <div class="p-4 bg-brand-950/30 border border-brand-500/20 rounded-2xl text-xs text-brand-300/90 flex items-center gap-3">
-          <i data-lucide="check-circle-2" class="w-5 h-5 text-brand-400 shrink-0"></i>
-          <span>Ketentuan layanan ini diperbarui secara berkala sesuai dengan perkembangan teknologi dan regulasi yang berlaku.</span>
+        <!-- Frame Logo -->
+        <div class="w-20 h-20 rounded-2xl bg-dark-card border border-brand-500/40 p-2 shadow-glow flex items-center justify-center relative z-10">
+          <img src="https://i.ibb.co.com/nqPTyK8G/image.png" alt="PanSkip Logo" class="w-full h-full object-cover rounded-xl" />
         </div>
 
+        <!-- Badge Alert Kecil -->
+        <div class="absolute -bottom-1 -right-1 z-20 bg-amber-500 text-dark-base p-1.5 rounded-full shadow-lg border-2 border-dark-base">
+          <i data-lucide="wrench" class="w-4 h-4"></i>
+        </div>
       </div>
 
-      <!-- BOTTOM ACTION (HANYA DIBUSAT TOMBOL KEMBALI DI SINI) -->
-      <div class="mt-8 text-center reveal">
-        <a href="index.html" class="sound-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-dark-base font-extrabold text-sm shadow-glow transition-all duration-300">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          <span>Kembali ke Halaman Utama</span>
+      <!-- TEXT PERINGATAN (WARNING BADGE) -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs sm:text-sm font-bold uppercase tracking-widest mb-4 shadow-glow-amber">
+        <i data-lucide="alert-triangle" class="w-4 h-4 animate-bounce"></i>
+        <span>Peringatan Pemeliharaan Sistem</span>
+      </div>
+
+      <!-- JUDUL UTAMA -->
+      <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight mb-4 leading-tight">
+        Situs Web Sedang Dalam <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-brand-400 to-emerald-300">Perbaikan Database</span>
+      </h1>
+
+      <!-- DESKRIPSI LENGKAP ESTIMASI -->
+      <p class="text-sm sm:text-base text-gray-300 leading-relaxed mb-8">
+        Mohon maaf atas ketidaknyamanannya. Layanan <strong class="text-white">PanSkip</strong> saat ini sedang mengalami kendala teknis dan struktur data sedang diperbaiki oleh tim engineer kami untuk meningkatkan kestabilan serta kecepatan sistem.
+      </p>
+
+      <!-- ESTIMASI WAKTU BOX -->
+      <div class="p-4 bg-dark-base/80 border border-gray-800 rounded-2xl mb-8 text-left space-y-3">
+        <div class="flex items-center justify-between text-xs sm:text-sm">
+          <span class="text-gray-400 flex items-center gap-2">
+            <i data-lucide="calendar-clock" class="w-4 h-4 text-brand-400"></i>
+            Estimasi Waktu Perbaikan:
+          </span>
+          <span class="font-extrabold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
+            13 - 15 September 2026
+          </span>
+        </div>
+        <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-amber-500 to-brand-500 w-3/4 animate-pulse"></div>
+        </div>
+      </div>
+
+      <!-- INFORMASI TAMBAHAN / DUKUNGAN -->
+      <div class="pt-6 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-brand-400"></i> Data Akun Tetap Aman
+        </span>
+        <a href="https://wa.me/6283139863736" target="_blank" rel="noopener noreferrer" class="hover:text-brand-400 transition-colors flex items-center gap-1 font-semibold text-gray-300">
+          <i data-lucide="message-circle" class="w-4 h-4 text-brand-400"></i> Hubungi Tim Support
         </a>
       </div>
 
     </div>
+
+    <!-- FOOTER -->
+    <p class="text-xs text-gray-500 mt-6">
+      &copy; 2026 PanSkip Engine. Dibuat oleh PT Reza Jaya.
+    </p>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-dark-card border-t border-white/5 py-8 text-gray-400">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p>&copy; 2026 PanSkip Engine. Dibuat dengan sepenuh hati.</p>
-      <p>dibuat oleh PT Reza Jaya .</p>
-    </div>
-  </footer>
-
-  <!-- VANILLA JAVASCRIPT LOGIC -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // Initialize Lucide Icons
-      lucide.createIcons();
-
-      // SOUND EFFECT VIA WEB AUDIO API
-      const playClickSound = () => {
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContext) return;
-          const ctx = new AudioContext();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(800, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04);
-
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-
-          osc.start();
-          osc.stop(ctx.currentTime + 0.04);
-        } catch (e) {
-          // Autoplay protection fallback
-        }
-      };
-
-      // Sound click events
-      document.querySelectorAll("button, a.sound-btn").forEach((elem) => {
-        elem.addEventListener("click", () => {
-          playClickSound();
-        });
-      });
-
-      // Intersection Observer Reveal Animation
-      const reveals = document.querySelectorAll(".reveal");
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("active");
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
-
-      reveals.forEach((el) => observer.observe(el));
-    });
+    // Initialize Lucide Icons
+    lucide.createIcons();
   </script>
 </body>
 </html>
