@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PanSkip - Layanan Bypass Shortlink & Iklan Gratis</title>
+  
+  <!-- Favicon / Logo Tab -->
+  <link rel="icon" href="https://i.ibb.co.com/q3d0fgTT/image.png" type="image/x-icon" />
+  <link rel="shortcut icon" href="https://i.ibb.co.com/q3d0fgTT/image.png" type="image/x-icon" />
+  
+  <!-- Supabase Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Integrasi Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. VARIABEL & SISTEM DESAIN (MODE GELAP & TERANG READY)
+       ========================================================================== */
+    :root {
+      --bg-base: #09090b;
+      --bg-surface: #121215;
+      --bg-card: #18181b;
+      --bg-card-hover: #222226;
+      --bg-input: #0f0f12;
+      
+      --border-color: #27272a;
+      --border-focus: #52525b;
+      
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      
+      --accent-primary: #ffffff;
+      --accent-hover: #e4e4e7;
+      --accent-text: #000000;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 9999px;
+      
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 25px rgba(255, 255, 255, 0.05);
+      
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #f1f5f9;
+      --bg-card-hover: #e2e8f0;
+      --bg-input: #ffffff;
+      
+      --border-color: #e2e8f0;
+      --border-focus: #94a3b8;
+      
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      
+      --accent-primary: #0f172a;
+      --accent-hover: #1e293b;
+      --accent-text: #ffffff;
+      
+      --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.05);
+      --shadow-glow: 0 0 25px rgba(0, 0, 0, 0.03);
+    }
+
+    /* ==========================================================================
+       2. RESET BROWSER & OVERRIDE HIGHLIGHT
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::selection {
+      background-color: #3f3f46;
+      color: #ffffff;
+    }
+
+    *:focus,
+    *:focus-visible {
+      outline: none !important;
+      box-shadow: none;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    button, input, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      border: none;
+      background: none;
+    }
+
+    /* ==========================================================================
+       3. ANIMASI KEYFRAME & EFEK RIPPLE
+       ========================================================================== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-fade {
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+    .touch-effect {
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .touch-effect:active {
+      transform: scale(0.94) !important;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0);
+      animation: ripple-animation 0.5s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* ==========================================================================
+       4. KONTAINER LAYOUT
+       ========================================================================== */
+    .container {
+      width: 100%;
+      max-width: 1120px;
+      padding: 0 24px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       5. HEADER / NAVBAR
+       ========================================================================== */
+    .header {
+      width: 100%;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: var(--transition);
+    }
+    
+    [data-theme="light"] .header {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .brand:hover .brand-logo-img {
+      transform: rotate(-6deg) scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      bottom: -4px;
+      left: 0;
+      background-color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .nav-link:hover {
+      color: var(--text-main);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-icon-action {
+      width: 42px;
+      height: 42px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-icon-action:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .btn-icon-action svg {
+      transition: var(--transition);
+    }
+
+    .btn-icon-action:hover svg {
+      transform: scale(1.1);
+    }
+
+    /* Badge Inisial Pengguna */
+    .user-avatar-badge {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .icon-sun { display: none; }
+    .icon-moon { display: block; }
+    [data-theme="light"] .icon-sun { display: block; }
+    [data-theme="light"] .icon-moon { display: none; }
+
+    /* ==========================================================================
+       6. SEKSI HERO & PANEL INPUT
+       ========================================================================== */
+    .hero {
+      padding: 80px 0 50px 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      transition: var(--transition);
+    }
+
+    .hero-badge:hover {
+      border-color: var(--border-focus);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    .hero-title {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, var(--text-main) 0%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      max-width: 800px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 20px;
+    }
+
+    /* BADGE INFORMASI LIMIT BYPASS */
+    .limit-info-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      margin-bottom: 32px;
+      font-size: 0.875rem;
+      box-shadow: var(--shadow-subtle);
+      transition: var(--transition);
+    }
+
+    .limit-info-badge:hover {
+      border-color: var(--border-focus);
+    }
+
+    .limit-count-tag {
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .limit-count-tag.exceeded {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .limit-details {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .limit-details strong {
+      color: var(--text-main);
+    }
+
+    .input-box-wrapper {
+      width: 100%;
+      max-width: 680px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 8px;
+      box-shadow: var(--shadow-subtle), var(--shadow-glow);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-box-wrapper:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .input-field-group {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 4px 6px 4px 16px;
+      transition: var(--transition);
+    }
+
+    .input-field-group:focus-within {
+      border-color: var(--border-focus);
+    }
+
+    .input-icon {
+      color: var(--text-dim);
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .input-field-group:focus-within .input-icon {
+      color: var(--text-main);
+    }
+
+    .bypass-input {
+      width: 100%;
+      padding: 12px 0;
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .bypass-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .btn-submit {
+      background: var(--accent-primary);
+      color: var(--accent-text);
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-submit svg {
+      transition: var(--transition);
+    }
+
+    .btn-submit:hover:not(:disabled) svg {
+      transform: translateX(4px);
+    }
+
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: var(--accent-text);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .supported-tags {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .tag-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      transition: var(--transition);
+      cursor: default;
+    }
+
+    .tag-item:hover {
+      border-color: var(--border-focus);
+      color: var(--text-main);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       7. KOTAK HASIL DINAMIS (OUTPUT API)
+       ========================================================================== */
+    .result-wrapper {
+      width: 100%;
+      max-width: 680px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .result-card {
+      background: var(--bg-surface);
+      border: 1px solid #22c55e;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: left;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+      animation: fadeInUp 0.4s ease forwards;
+    }
+
+    .result-card.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-url-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      margin-bottom: 14px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-copy {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn-copy:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+    }
+
+    .btn-open {
+      background: #22c55e;
+      color: #000000;
+    }
+
+    .btn-open:hover {
+      background: #16a34a;
+    }
+
+    /* ==========================================================================
+       8. MODAL AUTENTIKASI (POPUP LOGIN & DAFTAR)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-container {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .modal-close:hover {
+      color: var(--text-main);
+      background: var(--bg-card);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .auth-brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+    }
+
+    .auth-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Kontrol Tab Segmented Modal */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .auth-tab-btn {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .auth-tab-btn.active {
+      background: var(--bg-card);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Input Form Autentikasi */
+    .auth-form-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0 14px;
+      transition: var(--transition);
+    }
+
+    .form-input-wrapper:focus-within {
+      border-color: var(--border-focus);
+    }
+
+    .form-input-wrapper svg {
+      color: var(--text-dim);
+      margin-right: 10px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 0;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .btn-auth-submit {
+      width: 100%;
+      background: var(--accent-primary);
+      color: var(--accent-text);
+      font-weight: 600;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      margin-top: 8px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-auth-submit:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .auth-footer-text {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 16px;
+    }
+
+    .auth-footer-link {
+      color: var(--text-main);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Pengalih Tampilan Form Dinamis */
+    #register-form {
+      display: none;
+    }
+
+    /* ==========================================================================
+       8B. TAMPILAN DASHBOARD PROFIL PENGGUNA (MODAL)
+       ========================================================================== */
+    .user-profile-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .profile-large-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 800;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+      margin-bottom: 16px;
+    }
+
+    .profile-info-box {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+
+    .info-label {
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .info-val {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .btn-logout {
+      width: 100%;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-logout:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       STYLING NOTIFIKASI TOAST CUSTOM
+       ========================================================================== */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .custom-toast {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      max-width: 340px;
+    }
+
+    .custom-toast.success { border-color: #22c55e; }
+    .custom-toast.error { border-color: #ef4444; }
+    .custom-toast.info { border-color: #3b82f6; }
+
+    /* ==========================================================================
+       9. SEKSI METRIK STATISTIK
+       ========================================================================== */
+    .stats-section {
+      width: 100%;
+      padding: 40px 0;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      margin: 40px 0 60px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      text-align: center;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      background: var(--bg-surface);
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ==========================================================================
+       10. SEKSI FITUR / KARTU KEUNGGULAN
+       ========================================================================== */
+    .section-title-area {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-focus);
+      background: var(--bg-card);
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .feature-card:hover .card-icon {
+      background: var(--text-main);
+      color: var(--bg-base);
+      transform: scale(1.05);
+    }
+
+    .card-heading {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       11. SEKSI CARA KERJA / LANGKAH
+       ========================================================================== */
+    .steps-wrapper {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin-bottom: 80px;
+      transition: var(--transition);
+    }
+
+    .steps-wrapper:hover {
+      border-color: var(--border-focus);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+    }
+
+    .step-item:hover {
+      background: var(--bg-card);
+      transform: translateY(-3px);
+    }
+
+    .step-number {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: var(--transition);
+    }
+
+    .step-item:hover .step-number {
+      color: var(--text-main);
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ==========================================================================
+       12. FOOTER
+       ========================================================================== */
+    .footer {
+      width: 100%;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      padding: 40px 0;
+      margin-top: auto;
+      transition: var(--transition);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+    }
+
+    .footer-link:hover {
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       13. RESPONSIVE BEHAVIOR (TABLET & MOBILE)
+       ========================================================================== */
+    @media (max-width: 1023px) {
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      .cards-grid, .steps-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 767px) {
+      .container {
+        padding: 0 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 48px 0 32px 0;
+      }
+
+      .hero-title {
+        font-size: 2rem;
+      }
+
+      .hero-subtitle {
+        font-size: 0.95rem;
+      }
+
+      .limit-info-badge {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+      }
+
+      .input-field-group {
+        flex-direction: column;
+        padding: 12px;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .input-icon {
+        display: none;
+      }
+
+      .btn-submit {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .steps-wrapper {
+        padding: 24px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST CONTAINER UNTUK NOTIF CUSTOM -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- HEADER / NAVBAR -->
+  <header class="header">
+    <div class="container">
+      <div class="nav-inner">
+        <!-- Brand PanSkip dengan Gambar Logo Web -->
+        <a href="#" class="brand touch-effect">
+          <img src="https://i.ibb.co.com/q3d0fgTT/image.png" alt="PanSkip Logo" class="brand-logo-img" />
+          <span>PanSkip</span>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="#supported" class="nav-link">Layanan Didukung</a></li>
+          <li><a href="#features" class="nav-link">Fitur Utama</a></li>
+          <li><a href="#api" class="nav-link">Akses API</a></li>
+        </ul>
+
+        <!-- Action Buttons: Icon Profil & Dark/Light Mode Switcher -->
+        <div class="header-actions">
+          <!-- Tombol Profil (Memicu Pop-up Auth Modal) -->
+          <button class="btn-icon-action touch-effect" id="btn-profile" type="button" aria-label="Profil Pengguna" title="Profil">
+            <span id="profile-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+          </button>
+          
+          <button class="btn-icon-action touch-effect" id="theme-toggle" type="button" aria-label="Ganti Tema" title="Ganti Tema">
+            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="container">
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-badge animate-fade delay-1">
+        <span class="status-dot"></span>
+        <span>Semua sistem beroperasi normal 99.9% Uptime</span>
+      </div>
+
+      <h1 class="hero-title animate-fade delay-2">PanSkip - Panda Link Skip</h1>
+      <p class="hero-subtitle animate-fade delay-3">Layanan bypass shortlink instan anti-ribet. Melewati Sub2Unlock, Linkvertise, LootLabs, Work.ink, dan sistem kunci tanpa iklan, captcha, atau waktu tunggu.</p>
+
+      <!-- BADGE INFORMASI SISA KUOTA BYPASS HARIAN -->
+      <div class="limit-info-badge animate-fade delay-3" id="limit-info-badge">
+        <span class="limit-count-tag" id="limit-count-tag">Sisa Kuota: -/-</span>
+        <div class="limit-details" id="limit-details-text">
+          <span>Memuat data limit bypass...</span>
+        </div>
+      </div>
+
+      <!-- INPUT FORM AREA -->
+      <div class="input-box-wrapper animate-fade delay-4">
+        <form id="bypass-form" class="input-field-group">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </div>
+          <input 
+            type="url" 
+            id="url-input"
+            class="bypass-input" 
+            placeholder="Tempel link di sini (contoh: https://sub2unlock.me/...)"
+            required 
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit" id="btn-submit" class="btn-submit touch-effect">
+            <div id="btn-spinner" class="spinner"></div>
+            <span id="btn-text">Bypass Link</span>
+            <svg id="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- DYNAMIC RESULT BOX -->
+      <div id="result-wrapper" class="result-wrapper">
+        <div id="result-card" class="result-card">
+          <div class="result-header">
+            <span class="result-title" id="result-status-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Link Berhasil Di-bypass!
+            </span>
+          </div>
+          <div class="result-url-box" id="result-url">https://example.com</div>
+          <div class="result-actions">
+            <button class="btn-action btn-copy touch-effect" id="btn-copy-result">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Salin Link
+            </button>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="btn-action btn-open touch-effect" id="btn-open-result">
+              Buka Link Langsung
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPORTED PLATFORMS BADGES -->
+      <div class="supported-tags animate-fade delay-4">
+        <span>Populer:</span>
+        <span class="tag-item">Sub2Unlock</span>
+        <span class="tag-item">Linkvertise</span>
+        <span class="tag-item">LootLabs</span>
+        <span class="tag-item">Work.ink</span>
+        <span class="tag-item">Delta Key</span>
+        <span class="tag-item">Luarmor</span>
+      </div>
+    </section>
+
+    <!-- METRIK STATISTIK -->
+    <section class="stats-section animate-fade delay-4">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">50+</div>
+          <div class="stat-label">Layanan Didukung</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">6Juta+</div>
+          <div class="stat-label">Link Ter-bypass</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Server Aktif</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARA KERJA -->
+    <section class="steps-wrapper animate-fade delay-4">
+      <div class="section-title-area" style="text-align: left; margin-bottom: 20px;">
+        <h2 class="section-title">Cara Kerja PanSkip</h2>
+        <p class="section-desc">Dapatkan link tujuan dalam hitungan detik tanpa harus melewati jaring iklan yang mengganggu.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-item">
+          <span class="step-number">Langkah 01</span>
+          <h3 class="step-title">Salin Link Kamu</h3>
+          <p class="step-desc">Salin link shortener, iklan, atau link sistem kunci yang didukung dari peramban web kamu.</p>
+        </div>
+        <div class="step-item">
+          <span class="step-number">Langkah 02</span>
+          <h3 class="step-title">Tempelkan URL</h3>
+          <p class="step-desc">Tempelkan link ke dalam kotak input di atas dan klik tombol Bypass Link.</p>
+        </div>
+        <div class="step-item">
+          <span class="step-number">Langkah 03</span>
+          <h3 class="step-title">Dapatkan Link Langsung</h3>
+          <p class="step-desc">Sistem kami memproses URL sepenuhnya di sisi server dan memberikan link tujuan yang bersih.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FITUR KEUNGGULAN -->
+    <section id="features" style="margin-bottom: 60px;" class="animate-fade delay-4">
+      <div class="section-title-area">
+        <h2 class="section-title">Mengapa Menggunakan PanSkip?</h2>
+        <p class="section-desc">Dirancang untuk kecepatan, keamanan, dan keandalan tinggi.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="feature-card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <h3 class="card-heading">100% Sisi Server</h3>
+          <p class="card-text">Semua proses diproses melalui server khusus. Peramban kamu tidak akan pernah menyentuh iklan berbahaya, pop-up, atau pelacak.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <h3 class="card-heading">Bypass Instan</h3>
+          <p class="card-text">Melewati timer, tugas, survei, dan jebakan iklan banyak halaman secara otomatis. Dapatkan link tujuan rata-rata di bawah dua detik.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="card-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h3 class="card-heading">Tanpa Ekstensi</h3>
+          <p class="card-text">Tidak perlu memasang skrip atau ekstensi peramban yang berisiko. Bekerja mulus di komputer desktop, iOS, Android, dan semua jenis peramban.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- AUTH & PROFILE MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-container">
+      <button class="modal-close" id="modal-close-btn" type="button" aria-label="Tutup Modal">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- VIEW 1: AUTH FORM (TAMPIL PAS BELUM LOGIN) -->
+      <div id="auth-form-container">
+        <div class="auth-header">
+          <img src="https://i.ibb.co.com/q3d0fgTT/image.png" alt="PanSkip Logo" class="auth-brand-logo" />
+          <h2 class="auth-title" id="auth-modal-title">Selamat Datang!</h2>
+          <p class="auth-subtitle" id="auth-modal-subtitle">Masuk ke akun PanSkip kamu untuk akses 50x bypass/hari.</p>
+        </div>
+
+        <!-- Segmented Control Tabs -->
+        <div class="auth-tabs">
+          <div class="auth-tab-btn active touch-effect" id="tab-login-btn">Masuk</div>
+          <div class="auth-tab-btn touch-effect" id="tab-register-btn">Daftar</div>
+        </div>
+
+        <!-- Form Login -->
+        <form id="login-form" class="auth-form-content">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="form-input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" id="login-email" class="form-input" placeholder="Masukkan email kamu" required autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kata Sandi</label>
+            <div class="form-input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+            </div>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="btn-auth-submit touch-effect">Masuk Akun</button>
+
+          <p class="auth-footer-text">
+            Belum punya akun? <span class="auth-footer-link" id="switch-to-register">Daftar sekarang</span>
+          </p>
+        </form>
+
+        <!-- Form Register -->
+        <form id="register-form" class="auth-form-content">
+          <div class="form-group">
+            <label class="form-label">Nama Lengkap</label>
+            <div class="form-input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input type="text" id="reg-fullname" class="form-input" placeholder="Nama lengkap kamu" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="form-input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" id="reg-email" class="form-input" placeholder="nama@email.com" required autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kata Sandi</label>
+            <div class="form-input-wrapper">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" id="reg-password" class="form-input" placeholder="Buat kata sandi baru" required autocomplete="new-password" minlength="6" />
+            </div>
+          </div>
+
+          <button type="submit" id="btn-reg-submit" class="btn-auth-submit touch-effect">Buat Akun Gratis</button>
+
+          <p class="auth-footer-text">
+            Sudah punya akun? <span class="auth-footer-link" id="switch-to-login">Masuk di sini</span>
+          </p>
+        </form>
+      </div>
+
+      <!-- VIEW 2: PROFILE DASHBOARD (TAMPIL PAS SUDAH LOGIN & DIPENCET PROFIL) -->
+      <div id="user-profile-view" class="user-profile-view">
+        <div class="profile-large-avatar" id="dash-avatar">U</div>
+        <h2 class="auth-title" id="dash-name">Akun Pengguna</h2>
+        <p class="auth-subtitle" id="dash-email">pengguna@email.com</p>
+
+        <div class="profile-info-box">
+          <div class="info-row">
+            <span class="info-label">Status Akun</span>
+            <span class="info-val" style="color: #22c55e;">● Aktif (Pro)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Limit Harian</span>
+            <span class="info-val" style="color: #6366f1;">50 Bypass / Hari</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Bergabung Pada</span>
+            <span class="info-val" id="dash-date">-</span>
+          </div>
+        </div>
+
+        <button class="btn-logout touch-effect" id="btn-logout-act">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Keluar Dari Akun
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div>&copy; 2026 Mesin PanSkip. Dibuat dengan sepenuh hati.</div>
+        <ul class="footer-links">
+          <li><a href="terms.html" class="footer-link">Ketentuan</a></li>
+          <li><a href="privacy.html" class="footer-link">Privasi</a></li>
+          <li><a href="owner.html" class="footer-link">Pemilik</a></li>
+          <li><a href="document.html" class="footer-link">Dokumentasi</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT INTEGRASI API, AUTH MODAL & LOGIKA RATE LIMITING -->
+  <script>
+    // Inisialisasi Supabase Client
+    const SUPABASE_URL = "https://rszmipvmshgobshkewuu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzem1pcHZtc2hnb2JzaGtld3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMDA1MjMsImV4cCI6MjEwNDg3NjUyM30.Ph_2n4sHM7K_mf_SDE3ovKsLTSSWPVn9MuoEPWYWZOY";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let currentUserProfile = null;
+
+    // FUNGSI CUSTOM TOAST NOTIFIKASI
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `custom-toast ${type}`;
+      
+      let icon = 'ℹ️';
+      if (type === 'success') icon = '✅';
+      if (type === 'error') icon = '❌';
+
+      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ==========================================================================
+    // LOGIKA LIMIT & RESET KUOTA BYPASS
+    // ==========================================================================
+    function getNextResetTime(isLoggedIn) {
+      const now = new Date();
+      const target = new Date(now);
+
+      if (isLoggedIn) {
+        // Logged In: Reset jam 22.00 (10 malam)
+        target.setHours(22, 0, 0, 0);
+        if (now >= target) {
+          target.setDate(target.getDate() + 1);
+        }
+      } else {
+        // Guest: Reset jam 00.00 (tengah malam)
+        target.setHours(24, 0, 0, 0);
+      }
+      return target.getTime();
+    }
+
+    function getBypassQuota() {
+      const isLoggedIn = !!currentUser;
+      const keyPrefix = isLoggedIn ? `panskip_user_${currentUser.id}` : 'panskip_guest';
+      const maxLimit = isLoggedIn ? 50 : 1;
+
+      const storedData = localStorage.getItem(`${keyPrefix}_quota`);
+      const now = Date.now();
+
+      if (storedData) {
+        try {
+          const parsed = JSON.parse(storedData);
+          // Cek apakah waktu reset sudah lewat
+          if (now < parsed.resetTime) {
+            return {
+              used: parsed.used,
+              remaining: Math.max(0, maxLimit - parsed.used),
+              max: maxLimit,
+              resetTime: parsed.resetTime
+            };
+          }
+        } catch (e) {}
+      }
+
+      // Inisialisasi Kuota Baru jika belum ada / sudah reset
+      const newResetTime = getNextResetTime(isLoggedIn);
+      const newQuota = { used: 0, resetTime: newResetTime };
+      localStorage.setItem(`${keyPrefix}_quota`, JSON.stringify(newQuota));
+      return {
+        used: 0,
+        remaining: maxLimit,
+        max: maxLimit,
+        resetTime: newResetTime
+      };
+    }
+
+    function incrementBypassQuota() {
+      const isLoggedIn = !!currentUser;
+      const keyPrefix = isLoggedIn ? `panskip_user_${currentUser.id}` : 'panskip_guest';
+      const quota = getBypassQuota();
+
+      const updated = {
+        used: quota.used + 1,
+        resetTime: quota.resetTime
+      };
+      localStorage.setItem(`${keyPrefix}_quota`, JSON.stringify(updated));
+      updateLimitUI();
+    }
+
+    function updateLimitUI() {
+      const isLoggedIn = !!currentUser;
+      const quota = getBypassQuota();
+      
+      const tag = document.getElementById('limit-count-tag');
+      const details = document.getElementById('limit-details-text');
+      const submitBtn = document.getElementById('btn-submit');
+
+      tag.textContent = `Sisa Kuota: ${quota.remaining}/${quota.max}`;
+      
+      if (quota.remaining <= 0) {
+        tag.classList.add('exceeded');
+      } else {
+        tag.classList.remove('exceeded');
+      }
+
+      const resetDate = new Date(quota.resetTime);
+      const resetTimeStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+      if (isLoggedIn) {
+        details.innerHTML = `Mode Akun: <strong>${quota.remaining > 0 ? 'Aktif' : 'Kuota Habis'}</strong> (Reset jam 10:00 malam WIB - ${resetTimeStr})`;
+      } else {
+        details.innerHTML = `Tamu: <strong>1x bypass/hari</strong> (Reset jam 00:00 malam WIB - ${resetTimeStr}) • <span style="color:var(--text-main); text-decoration:underline; cursor:pointer;" onclick="document.getElementById('btn-profile').click()">Login untuk 50x</span>`;
+      }
+    }
+
+    // Pengalih Tema Fitur
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const htmlElement = document.documentElement;
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = htmlElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      htmlElement.setAttribute('data-theme', newTheme);
+    });
+
+    // Ripple Click/Touch Feedback Animation
+    document.querySelectorAll('.touch-effect').forEach(button => {
+      button.addEventListener('click', function (e) {
+        const circle = document.createElement('span');
+        const diameter = Math.max(this.clientWidth, this.clientHeight);
+        const radius = diameter / 2;
+
+        const rect = this.getBoundingClientRect();
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${e.clientX - rect.left - radius}px`;
+        circle.style.top = `${e.clientY - rect.top - radius}px`;
+        circle.classList.add('ripple');
+
+        const ripple = this.getElementsByClassName('ripple')[0];
+        if (ripple) {
+          ripple.remove();
+        }
+
+        this.appendChild(circle);
+      });
+    });
+
+    // Auth & Logika Modal Profil
+    const btnProfile = document.getElementById('btn-profile');
+    const profileIconWrapper = document.getElementById('profile-icon-wrapper');
+    const authModal = document.getElementById('auth-modal');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    
+    const authFormContainer = document.getElementById('auth-form-container');
+    const userProfileView = document.getElementById('user-profile-view');
+    
+    const tabLoginBtn = document.getElementById('tab-login-btn');
+    const tabRegisterBtn = document.getElementById('tab-register-btn');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    
+    const authModalTitle = document.getElementById('auth-modal-title');
+    const authModalSubtitle = document.getElementById('auth-modal-subtitle');
+    const switchToRegister = document.getElementById('switch-to-register');
+    const switchToLogin = document.getElementById('switch-to-login');
+
+    const dashAvatar = document.getElementById('dash-avatar');
+    const dashName = document.getElementById('dash-name');
+    const dashEmail = document.getElementById('dash-email');
+    const dashDate = document.getElementById('dash-date');
+    const btnLogoutAct = document.getElementById('btn-logout-act');
+
+    // Cek Sesi User Aktif
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        await renderUserBadge(currentUser);
+      }
+      updateLimitUI();
+    }
+
+    async function renderUserBadge(user) {
+      let name = user.user_metadata?.full_name || "User";
+      try {
+        const { data } = await supabaseClient
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (data && data.full_name) name = data.full_name;
+      } catch (e) {}
+
+      currentUserProfile = { name, email: user.email, createdAt: user.created_at };
+      const initial = name.charAt(0).toUpperCase();
+      profileIconWrapper.innerHTML = `<div class="user-avatar-badge">${initial}</div>`;
+    }
+
+    // Event Tombol Profil Navigasi
+    btnProfile.addEventListener('click', () => {
+      authModal.classList.add('active');
+      if (currentUser) {
+        // Tampilkan Dashboard Profil User yang sudah Login
+        authFormContainer.style.display = 'none';
+        userProfileView.style.display = 'flex';
+        
+        const initial = (currentUserProfile?.name || 'U').charAt(0).toUpperCase();
+        dashAvatar.textContent = initial;
+        dashName.textContent = currentUserProfile?.name || "User";
+        dashEmail.textContent = currentUser?.email || "";
+        
+        const dateObj = new Date(currentUser?.created_at);
+        dashDate.textContent = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      } else {
+        // Tampilkan Form Login / Register jika belum Login
+        userProfileView.style.display = 'none';
+        authFormContainer.style.display = 'block';
+        showLoginForm();
+      }
+    });
+
+    // Event Tombol Logout
+    btnLogoutAct.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      currentUserProfile = null;
+      authModal.classList.remove('active');
+      profileIconWrapper.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      `;
+      showToast("Berhasil keluar dari akun.", "info");
+      updateLimitUI();
+    });
+
+    modalCloseBtn.addEventListener('click', () => {
+      authModal.classList.remove('active');
+    });
+
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) {
+        authModal.classList.remove('active');
+      }
+    });
+
+    function showLoginForm() {
+      tabLoginBtn.classList.add('active');
+      tabRegisterBtn.classList.remove('active');
+      loginForm.style.display = 'flex';
+      registerForm.style.display = 'none';
+      authModalTitle.textContent = 'Selamat Datang!';
+      authModalSubtitle.textContent = 'Masuk ke akun PanSkip kamu untuk akses 50x bypass/hari.';
+    }
+
+    function showRegisterForm() {
+      tabRegisterBtn.classList.add('active');
+      tabLoginBtn.classList.remove('active');
+      registerForm.style.display = 'flex';
+      loginForm.style.display = 'none';
+      authModalTitle.textContent = 'Buat Akun Baru';
+      authModalSubtitle.textContent = 'Daftar sekarang gratis untuk mulai bypass shortlink.';
+    }
+
+    tabLoginBtn.addEventListener('click', showLoginForm);
+    tabRegisterBtn.addEventListener('click', showRegisterForm);
+    switchToRegister.addEventListener('click', showRegisterForm);
+    switchToLogin.addEventListener('click', showLoginForm);
+
+    // Form Submit Register Supabase
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('reg-fullname').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const btn = document.getElementById('btn-reg-submit');
+
+      btn.disabled = true;
+      btn.textContent = "Proses...";
+
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } }
+      });
+
+      btn.disabled = false;
+      btn.textContent = "Buat Akun Gratis";
+
+      if (error) {
+        showToast("Gagal Daftar: " + error.message, "error");
+      } else {
+        showToast("Pendaftaran berhasil! Silakan masuk.", "success");
+        showLoginForm();
+      }
+    });
+
+    // Form Submit Login Supabase
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-login-submit');
+
+      btn.disabled = true;
+      btn.textContent = "Verifikasi...";
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      btn.disabled = false;
+      btn.textContent = "Masuk Akun";
+
+      if (error) {
+        showToast("Login Gagal: Email atau kata sandi salah.", "error");
+      } else {
+        currentUser = data.user;
+        await renderUserBadge(currentUser);
+        authModal.classList.remove('active');
+        showToast("Login berhasil! Selamat datang.", "success");
+        updateLimitUI();
+      }
+    });
+
+    // Integrasi API & Handler Form Bypass
+    const bypassForm = document.getElementById('bypass-form');
+    const urlInput = document.getElementById('url-input');
+    const btnSubmit = document.getElementById('btn-submit');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const btnArrow = document.getElementById('btn-arrow');
+    
+    const resultWrapper = document.getElementById('result-wrapper');
+    const resultCard = document.getElementById('result-card');
+    const resultStatusTitle = document.getElementById('result-status-title');
+    const resultUrl = document.getElementById('result-url');
+    const btnCopyResult = document.getElementById('btn-copy-result');
+    const btnOpenResult = document.getElementById('btn-open-result');
+
+    const API_KEY = "kyzz07438171";
+
+    bypassForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // VALIDASI KUOTA SEBELUM PROSES
+      const quota = getBypassQuota();
+      if (quota.remaining <= 0) {
+        if (!currentUser) {
+          showToast("Kuota harian tamu (1x) habis. Silakan Login untuk 50x bypass!", "error");
+          authModal.classList.add('active');
+          showLoginForm();
+        } else {
+          showToast("Kuota bypass harian kamu (50/50) sudah habis. Coba lagi setelah jam 22.00 WIB.", "error");
+        }
+        return;
+      }
+
+      const targetUrl = urlInput.value.trim();
+      if (!targetUrl) return;
+
+      btnSubmit.disabled = true;
+      btnText.textContent = "Memproses...";
+      btnSpinner.style.display = "block";
+      btnArrow.style.display = "none";
+      resultWrapper.style.display = "none";
+
+      try {
+        const apiUrl = `https://api.kyzzz.xyz/api/bypass/bypass2?url=${encodeURIComponent(targetUrl)}&apikey=${API_KEY}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data && data.status && data.result && data.result.direct) {
+          const directUrl = data.result.direct;
+          
+          resultCard.classList.remove('error');
+          resultStatusTitle.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Link Berhasil Di-bypass!
+          `;
+          resultUrl.textContent = directUrl;
+          btnOpenResult.href = directUrl;
+          btnOpenResult.style.display = "inline-flex";
+          resultWrapper.style.display = "block";
+          
+          // Kurangi Kuota Jika Bypass Berhasil
+          incrementBypassQuota();
+          showToast("Shortlink berhasil di-bypass!", "success");
+        } else {
+          throw new Error("Gagal mendapatkan link direct dari server.");
+        }
+      } catch (err) {
+        resultCard.classList.add('error');
+        resultStatusTitle.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          Proses Bypass Gagal!
+        `;
+        resultUrl.textContent = err.message || "Terjadi kesalahan saat menghubungkan ke API.";
+        btnOpenResult.style.display = "none";
+        resultWrapper.style.display = "block";
+        showToast("Proses bypass gagal.", "error");
+      } finally {
+        btnSubmit.disabled = false;
+        btnText.textContent = "Bypass Link";
+        btnSpinner.style.display = "none";
+        btnArrow.style.display = "block";
+      }
+    });
+
+    // Salin ke Papan Klip
+    btnCopyResult.addEventListener('click', () => {
+      const textToCopy = resultUrl.textContent;
+      if (textToCopy && textToCopy.startsWith('http')) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast("Link tersalin ke papan klip!", "success");
+        });
+      }
+    });
+
+    // Jalankan Cek Sesi & Inisialisasi Limit
+    checkSession();
+  </script>
+</body>
+</html>
