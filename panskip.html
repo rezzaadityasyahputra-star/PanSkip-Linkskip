@@ -313,7 +313,6 @@
       transform: scale(1.1);
     }
 
-    /* Badge Inisial Pengguna */
     .user-avatar-badge {
       width: 28px;
       height: 28px;
@@ -337,7 +336,7 @@
        6. SEKSI HERO & PANEL INPUT
        ========================================================================== */
     .hero {
-      padding: 80px 0 50px 0;
+      padding: 80px 0 30px 0;
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -388,10 +387,67 @@
       font-size: 1.125rem;
       color: var(--text-muted);
       max-width: 640px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
-    /* BADGE INFORMASI LIMIT BYPASS */
+    /* DASHBOARD PANEL DI BAWAH DESKRIPSI HERO */
+    .live-dashboard-panel {
+      width: 100%;
+      max-width: 800px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-subtle);
+      transition: var(--transition);
+    }
+
+    .live-dashboard-panel:hover {
+      border-color: var(--border-focus);
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .dash-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .dash-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .dash-card-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .dash-card-lbl {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .dash-reset-note {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 12px;
+      text-align: center;
+    }
+
     .limit-info-badge {
       display: flex;
       align-items: center;
@@ -656,7 +712,7 @@
     }
 
     /* ==========================================================================
-       8. MODAL AUTENTIKASI (POPUP LOGIN & DAFTAR)
+       8. MODAL AUTENTIKASI & NOTIFIKASI KICK
        ========================================================================== */
     .modal-overlay {
       position: fixed;
@@ -740,7 +796,6 @@
       color: var(--text-muted);
     }
 
-    /* Kontrol Tab Segmented Modal */
     .auth-tabs {
       display: flex;
       background: var(--bg-input);
@@ -768,7 +823,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    /* Input Form Autentikasi */
     .auth-form-content {
       display: flex;
       flex-direction: column;
@@ -848,14 +902,11 @@
       text-decoration: underline;
     }
 
-    /* Pengalih Tampilan Form Dinamis */
     #register-form {
       display: none;
     }
 
-    /* ==========================================================================
-       8B. TAMPILAN DASHBOARD PROFIL PENGGUNA (MODAL)
-       ========================================================================== */
+    /* DASHBOARD PROFIL USER */
     .user-profile-view {
       display: none;
       flex-direction: column;
@@ -929,9 +980,43 @@
       color: #ffffff;
     }
 
-    /* ==========================================================================
-       STYLING NOTIFIKASI TOAST CUSTOM
-       ========================================================================== */
+    /* MODAL NOTIFIKASI KICK AKUN (DITENGAH LAYAR & BESERTA LOGO) */
+    .kick-modal-container {
+      background: var(--bg-surface);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 400px;
+      padding: 32px 24px;
+      box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25);
+      position: relative;
+      text-align: center;
+      animation: modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .kick-logo-img {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      border: 2px solid rgba(239, 68, 68, 0.5);
+    }
+
+    .kick-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 8px;
+    }
+
+    .kick-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    /* TOAST NOTIFIKASI CUSTOM */
     .toast-container {
       position: fixed;
       bottom: 24px;
@@ -1175,7 +1260,7 @@
     }
 
     /* ==========================================================================
-       13. RESPONSIVE BEHAVIOR (TABLET & MOBILE)
+       13. RESPONSIVE BEHAVIOR
        ========================================================================== */
     @media (max-width: 1023px) {
       .hero-title {
@@ -1205,6 +1290,11 @@
 
       .hero-subtitle {
         font-size: 0.95rem;
+      }
+
+      .dash-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
       }
 
       .limit-info-badge {
@@ -1277,9 +1367,8 @@
           <li><a href="#api" class="nav-link">Akses API</a></li>
         </ul>
 
-        <!-- Action Buttons: Icon Profil & Dark/Light Mode Switcher -->
+        <!-- Action Buttons -->
         <div class="header-actions">
-          <!-- Tombol Profil (Memicu Pop-up Auth Modal) -->
           <button class="btn-icon-action touch-effect" id="btn-profile" type="button" aria-label="Profil Pengguna" title="Profil">
             <span id="profile-icon-wrapper">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1322,6 +1411,29 @@
 
       <h1 class="hero-title animate-fade delay-2">PanSkip - Panda Link Skip</h1>
       <p class="hero-subtitle animate-fade delay-3">Layanan bypass shortlink instan anti-ribet. Melewati Sub2Unlock, Linkvertise, LootLabs, Work.ink, dan sistem kunci tanpa iklan, captcha, atau waktu tunggu.</p>
+
+      <!-- DASHBOARD STATISTIK DI BAWAH DESKRIPSI HERO -->
+      <div class="live-dashboard-panel animate-fade delay-3">
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dash-card-val" id="dash-val-views">0</div>
+            <div class="dash-card-lbl">Total Kunjungan</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-val" id="dash-val-guests">0</div>
+            <div class="dash-card-lbl">Tamu Online</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-val" id="dash-val-accounts">0</div>
+            <div class="dash-card-lbl">Total Akun</div>
+          </div>
+          <div class="dash-card">
+            <div class="dash-card-val" id="dash-val-online">0</div>
+            <div class="dash-card-lbl">Akun Online</div>
+          </div>
+        </div>
+        <div class="dash-reset-note">ℹ️ Total kunjungan di-reset otomatis setiap jam 00:00 (tengah malam) WIB.</div>
+      </div>
 
       <!-- BADGE INFORMASI SISA KUOTA BYPASS HARIAN -->
       <div class="limit-info-badge animate-fade delay-3" id="limit-info-badge">
@@ -1501,7 +1613,7 @@
         </svg>
       </button>
 
-      <!-- VIEW 1: AUTH FORM (TAMPIL PAS BELUM LOGIN) -->
+      <!-- VIEW 1: AUTH FORM -->
       <div id="auth-form-container">
         <div class="auth-header">
           <img src="https://i.ibb.co.com/q3d0fgTT/image.png" alt="PanSkip Logo" class="auth-brand-logo" />
@@ -1509,13 +1621,11 @@
           <p class="auth-subtitle" id="auth-modal-subtitle">Masuk ke akun PanSkip kamu untuk akses 50x bypass/hari.</p>
         </div>
 
-        <!-- Segmented Control Tabs -->
         <div class="auth-tabs">
           <div class="auth-tab-btn active touch-effect" id="tab-login-btn">Masuk</div>
           <div class="auth-tab-btn touch-effect" id="tab-register-btn">Daftar</div>
         </div>
 
-        <!-- Form Login -->
         <form id="login-form" class="auth-form-content">
           <div class="form-group">
             <label class="form-label">Email</label>
@@ -1546,7 +1656,6 @@
           </p>
         </form>
 
-        <!-- Form Register -->
         <form id="register-form" class="auth-form-content">
           <div class="form-group">
             <label class="form-label">Nama Lengkap</label>
@@ -1589,7 +1698,7 @@
         </form>
       </div>
 
-      <!-- VIEW 2: PROFILE DASHBOARD (TAMPIL PAS SUDAH LOGIN & DIPENCET PROFIL) -->
+      <!-- VIEW 2: PROFILE DASHBOARD -->
       <div id="user-profile-view" class="user-profile-view">
         <div class="profile-large-avatar" id="dash-avatar">U</div>
         <h2 class="auth-title" id="dash-name">Akun Pengguna</h2>
@@ -1623,6 +1732,24 @@
     </div>
   </div>
 
+  <!-- MODAL NOTIFIKASI KICK AKUN (APABILA DIHAPUS DARI DATABASE) -->
+  <div class="modal-overlay" id="kick-modal">
+    <div class="kick-modal-container">
+      <button class="modal-close" id="kick-modal-close-btn" type="button" aria-label="Tutup Notifikasi">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <img src="https://i.ibb.co.com/q3d0fgTT/image.png" alt="PanSkip Logo" class="kick-logo-img" />
+      <h3 class="kick-title">Akun Telah Dikeluarkan</h3>
+      <p class="kick-desc">Maaf, akun Anda telah dihapus atau dikeluarkkan dari sistem PanSkip oleh administrator. Silakan buat akun baru atau hubungi pengelola.</p>
+      
+      <button class="btn-auth-submit touch-effect" id="btn-kick-close" style="background:#ef4444; color:#fff;">Mengerti</button>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
@@ -1638,7 +1765,7 @@
     </div>
   </footer>
 
-  <!-- SCRIPT INTEGRASI API, AUTH MODAL & LOGIKA RATE LIMITING -->
+  <!-- SCRIPT INTEGRASI API, SUPABASE, REAL-TIME MONITORING & LIMITING -->
   <script>
     // Inisialisasi Supabase Client
     const SUPABASE_URL = "https://rszmipvmshgobshkewuu.supabase.co";
@@ -1647,6 +1774,7 @@
 
     let currentUser = null;
     let currentUserProfile = null;
+    let userSubscription = null;
 
     // FUNGSI CUSTOM TOAST NOTIFIKASI
     function showToast(message, type = 'info') {
@@ -1670,6 +1798,100 @@
     }
 
     // ==========================================================================
+    // LOGIKA MONITORING DASHBOARD (TOTAL KUNJUNGAN, TAMU, AKUN, ONLINE)
+    // ==========================================================================
+    function initDailyPageViews() {
+      const today = new Date().toISOString().split('T')[0];
+      let viewData = JSON.parse(localStorage.getItem('panskip_daily_views') || '{}');
+      
+      if (viewData.date !== today) {
+        viewData = { date: today, count: 1 };
+      } else {
+        viewData.count = (viewData.count || 0) + 1;
+      }
+      
+      localStorage.setItem('panskip_daily_views', JSON.stringify(viewData));
+      document.getElementById('dash-val-views').textContent = viewData.count;
+    }
+
+    // Melacak & memperbarui metrik online & total akun lewat Supabase Realtime Presence
+    async function setupPresenceAndMetrics() {
+      initDailyPageViews();
+
+      // 1. Ambil total akun terdaftar dari tabel Supabase
+      try {
+        const { count, error } = await supabaseClient
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        if (!error && count !== null) {
+          document.getElementById('dash-val-accounts').textContent = count;
+        }
+      } catch (e) {}
+
+      // 2. Lacak Tamu & Pengguna Online via Supabase Realtime Channel
+      const room = supabaseClient.channel('panskip_presence_room', {
+        config: { presence: { key: currentUser ? currentUser.id : `guest_${Math.random()}` } }
+      });
+
+      room.on('presence', { event: 'sync' }, () => {
+        const state = room.presenceState();
+        let guestCount = 0;
+        let onlineUserCount = 0;
+
+        Object.keys(state).forEach(key => {
+          if (key.startsWith('guest_')) {
+            guestCount += state[key].length;
+          } else {
+            onlineUserCount += state[key].length;
+          }
+        });
+
+        document.getElementById('dash-val-guests').textContent = guestCount;
+        document.getElementById('dash-val-online').textContent = onlineUserCount;
+      }).subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await room.track({
+            user_id: currentUser ? currentUser.id : null,
+            is_guest: !currentUser,
+            online_at: new Date().toISOString()
+          });
+        }
+      });
+    }
+
+    // ==========================================================================
+    // LOGIKA REAL-TIME MONITORING KICK/HAPUS AKUN
+    // ==========================================================================
+    function showKickModal() {
+      const kickModal = document.getElementById('kick-modal');
+      kickModal.classList.add('active');
+    }
+
+    function closeKickModal() {
+      const kickModal = document.getElementById('kick-modal');
+      kickModal.classList.remove('active');
+    }
+
+    document.getElementById('kick-modal-close-btn').addEventListener('click', closeKickModal);
+    document.getElementById('btn-kick-close').addEventListener('click', closeKickModal);
+
+    function listenUserDeletion(userId) {
+      if (userSubscription) userSubscription.unsubscribe();
+
+      userSubscription = supabaseClient
+        .channel(`public:profiles:id=eq.${userId}`)
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, async () => {
+          await supabaseClient.auth.signOut();
+          currentUser = null;
+          currentUserProfile = null;
+          authModal.classList.remove('active');
+          renderLoggedOutState();
+          showKickModal();
+        })
+        .subscribe();
+    }
+
+    // ==========================================================================
     // LOGIKA LIMIT & RESET KUOTA BYPASS
     // ==========================================================================
     function getNextResetTime(isLoggedIn) {
@@ -1677,13 +1899,13 @@
       const target = new Date(now);
 
       if (isLoggedIn) {
-        // Logged In: Reset jam 22.00 (10 malam)
+        // Logged In: Reset jam 22.00 WIB
         target.setHours(22, 0, 0, 0);
         if (now >= target) {
           target.setDate(target.getDate() + 1);
         }
       } else {
-        // Guest: Reset jam 00.00 (tengah malam)
+        // Guest: Reset jam 00.00 WIB
         target.setHours(24, 0, 0, 0);
       }
       return target.getTime();
@@ -1700,7 +1922,6 @@
       if (storedData) {
         try {
           const parsed = JSON.parse(storedData);
-          // Cek apakah waktu reset sudah lewat
           if (now < parsed.resetTime) {
             return {
               used: parsed.used,
@@ -1712,7 +1933,6 @@
         } catch (e) {}
       }
 
-      // Inisialisasi Kuota Baru jika belum ada / sudah reset
       const newResetTime = getNextResetTime(isLoggedIn);
       const newQuota = { used: 0, resetTime: newResetTime };
       localStorage.setItem(`${keyPrefix}_quota`, JSON.stringify(newQuota));
@@ -1743,7 +1963,6 @@
       
       const tag = document.getElementById('limit-count-tag');
       const details = document.getElementById('limit-details-text');
-      const submitBtn = document.getElementById('btn-submit');
 
       tag.textContent = `Sisa Kuota: ${quota.remaining}/${quota.max}`;
       
@@ -1763,7 +1982,7 @@
       }
     }
 
-    // Pengalih Tema Fitur
+    // Switcher Tema (Dark / Light)
     const themeToggleBtn = document.getElementById('theme-toggle');
     const htmlElement = document.documentElement;
 
@@ -1773,7 +1992,7 @@
       htmlElement.setAttribute('data-theme', newTheme);
     });
 
-    // Ripple Click/Touch Feedback Animation
+    // Ripple Click Feedback Animation
     document.querySelectorAll('.touch-effect').forEach(button => {
       button.addEventListener('click', function (e) {
         const circle = document.createElement('span');
@@ -1795,7 +2014,7 @@
       });
     });
 
-    // Auth & Logika Modal Profil
+    // Auth & Modal Profile Handling
     const btnProfile = document.getElementById('btn-profile');
     const profileIconWrapper = document.getElementById('profile-icon-wrapper');
     const authModal = document.getElementById('auth-modal');
@@ -1820,24 +2039,47 @@
     const dashDate = document.getElementById('dash-date');
     const btnLogoutAct = document.getElementById('btn-logout-act');
 
-    // Cek Sesi User Aktif
     async function checkSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
         currentUser = session.user;
         await renderUserBadge(currentUser);
+        listenUserDeletion(currentUser.id);
+      } else {
+        renderLoggedOutState();
       }
+      setupPresenceAndMetrics();
       updateLimitUI();
+    }
+
+    function renderLoggedOutState() {
+      profileIconWrapper.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      `;
     }
 
     async function renderUserBadge(user) {
       let name = user.user_metadata?.full_name || "User";
       try {
-        const { data } = await supabaseClient
+        const { data, error } = await supabaseClient
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
           .single();
+
+        // Cek jika akun sudah dihapus dari tabel 'profiles'
+        if (error || !data) {
+          await supabaseClient.auth.signOut();
+          currentUser = null;
+          currentUserProfile = null;
+          renderLoggedOutState();
+          showKickModal();
+          return;
+        }
+
         if (data && data.full_name) name = data.full_name;
       } catch (e) {}
 
@@ -1846,11 +2088,9 @@
       profileIconWrapper.innerHTML = `<div class="user-avatar-badge">${initial}</div>`;
     }
 
-    // Event Tombol Profil Navigasi
     btnProfile.addEventListener('click', () => {
       authModal.classList.add('active');
       if (currentUser) {
-        // Tampilkan Dashboard Profil User yang sudah Login
         authFormContainer.style.display = 'none';
         userProfileView.style.display = 'flex';
         
@@ -1862,26 +2102,21 @@
         const dateObj = new Date(currentUser?.created_at);
         dashDate.textContent = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       } else {
-        // Tampilkan Form Login / Register jika belum Login
         userProfileView.style.display = 'none';
         authFormContainer.style.display = 'block';
         showLoginForm();
       }
     });
 
-    // Event Tombol Logout
     btnLogoutAct.addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
+      if (userSubscription) userSubscription.unsubscribe();
       currentUser = null;
       currentUserProfile = null;
       authModal.classList.remove('active');
-      profileIconWrapper.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-      `;
+      renderLoggedOutState();
       showToast("Berhasil keluar dari akun.", "info");
+      setupPresenceAndMetrics();
       updateLimitUI();
     });
 
@@ -1918,7 +2153,7 @@
     switchToRegister.addEventListener('click', showRegisterForm);
     switchToLogin.addEventListener('click', showLoginForm);
 
-    // Form Submit Register Supabase
+    // Form Register Supabase
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fullName = document.getElementById('reg-fullname').value.trim();
@@ -1943,10 +2178,11 @@
       } else {
         showToast("Pendaftaran berhasil! Silakan masuk.", "success");
         showLoginForm();
+        setupPresenceAndMetrics();
       }
     });
 
-    // Form Submit Login Supabase
+    // Form Login Supabase
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -1966,8 +2202,10 @@
       } else {
         currentUser = data.user;
         await renderUserBadge(currentUser);
+        listenUserDeletion(currentUser.id);
         authModal.classList.remove('active');
         showToast("Login berhasil! Selamat datang.", "success");
+        setupPresenceAndMetrics();
         updateLimitUI();
       }
     });
@@ -1992,7 +2230,6 @@
     bypassForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // VALIDASI KUOTA SEBELUM PROSES
       const quota = getBypassQuota();
       if (quota.remaining <= 0) {
         if (!currentUser) {
@@ -2034,7 +2271,6 @@
           btnOpenResult.style.display = "inline-flex";
           resultWrapper.style.display = "block";
           
-          // Kurangi Kuota Jika Bypass Berhasil
           incrementBypassQuota();
           showToast("Shortlink berhasil di-bypass!", "success");
         } else {
@@ -2062,7 +2298,6 @@
       }
     });
 
-    // Salin ke Papan Klip
     btnCopyResult.addEventListener('click', () => {
       const textToCopy = resultUrl.textContent;
       if (textToCopy && textToCopy.startsWith('http')) {
@@ -2072,7 +2307,7 @@
       }
     });
 
-    // Jalankan Cek Sesi & Inisialisasi Limit
+    // Inisialisasi Aplikasi
     checkSession();
   </script>
 </body>
