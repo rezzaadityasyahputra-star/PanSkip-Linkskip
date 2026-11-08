@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PanSkip - Chating</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100dvh;
+        }
+
+        /* Animated Particle Canvas */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Blue Pill Button with Transparent Glow */
+        .pill-btn-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pill-btn-blue:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 28px rgba(59, 130, 246, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+        }
+
+        .pill-btn-blue:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        /* Custom Scrollbar for Chat */
+        #chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 9999px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.4);
+        }
+
+        /* Swipeable Message Wrapper */
+        .msg-wrapper {
+            touch-action: pan-y;
+            user-select: none;
+            position: relative;
+        }
+
+        .msg-bubble-container {
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform;
+        }
+
+        .msg-bubble-container.swiping {
+            transition: none;
+        }
+
+        /* Reply Icon Indicator behind message */
+        .swipe-reply-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scale(0.5);
+            opacity: 0;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            pointer-events: none;
+        }
+
+        .swipe-reply-icon.visible {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Message Entrance */
+        @keyframes msgPop {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .animate-msg {
+            animation: msgPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Highlight Flash when clicking quoted reply */
+        @keyframes highlightFlash {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.6); box-shadow: 0 0 25px rgba(59, 130, 246, 0.7); }
+        }
+        .highlight-msg {
+            animation: highlightFlash 0.9s ease;
+        }
+
+        /* Navbar Active Glow */
+        .nav-item.active {
+            color: #ffffff;
+            background: rgba(59, 130, 246, 0.22);
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="flex flex-col relative selection:bg-blue-500/30 selection:text-blue-200">
+
+    <!-- Animated White Dots Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Top-Right Header: Logo + PanSkip -->
+    <header class="fixed top-3 right-4 sm:top-5 sm:right-6 z-30 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+        <div class="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center bg-blue-500/20 border border-blue-400/30">
+            <img 
+                src="skip.png" 
+                alt="PanSkip Logo" 
+                class="w-full h-full object-cover"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            >
+            <div class="hidden w-full h-full items-center justify-center text-blue-400">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+        </div>
+        <span class="text-base sm:text-lg font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]">
+            Pan<span class="text-blue-400">Skip</span>
+        </span>
+    </header>
+
+    <!-- Top-Left Chat Room Info -->
+    <div class="fixed top-3 left-4 sm:top-5 sm:left-6 z-30 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+        <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs sm:text-sm font-medium text-gray-200">Global Chat</span>
+    </div>
+
+    <!-- Main Chat Container -->
+    <main class="relative z-10 flex-1 flex flex-col w-full max-w-2xl mx-auto pt-16 pb-24 px-3 sm:px-4 h-full overflow-hidden">
+        
+        <!-- Glassmorphic Chat Box -->
+        <div class="flex-1 flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] overflow-hidden">
+            
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 scroll-smooth">
+                <!-- Messages injected by JS -->
+            </div>
+
+            <!-- Image Preview Bar (Hidden by default) -->
+            <div id="image-preview-bar" class="hidden px-4 py-2.5 bg-black/60 border-t border-white/10 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <img id="image-preview-thumb" src="" alt="Preview" class="w-12 h-12 rounded-xl object-cover border border-blue-500/40">
+                    <div class="text-xs text-gray-300">
+                        <p class="font-medium text-white" id="image-preview-name">photo.jpg</p>
+                        <p class="text-gray-400">Siap dikirim</p>
+                    </div>
+                </div>
+                <button type="button" id="cancel-image-btn" class="p-1.5 rounded-full bg-white/10 hover:bg-red-500/20 text-gray-300 hover:text-red-400 transition-colors cursor-pointer">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Reply Preview Bar (Hidden by default) -->
+            <div id="reply-preview-bar" class="hidden px-4 py-2.5 bg-blue-950/30 border-t border-blue-500/30 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0 border-l-2 border-blue-400 pl-2.5">
+                    <div class="min-w-0">
+                        <p id="reply-preview-sender" class="text-xs font-semibold text-blue-400 truncate">Replying to...</p>
+                        <p id="reply-preview-text" class="text-xs text-gray-300 truncate">Message preview</p>
+                    </div>
+                </div>
+                <button type="button" id="cancel-reply-btn" class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors shrink-0 cursor-pointer">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form id="chat-form" class="p-3 sm:p-4 bg-black/50 border-t border-white/10 flex items-center gap-2">
+                <!-- Hidden File Input -->
+                <input type="file" id="photo-input" accept="image/*" class="hidden">
+
+                <!-- Photo Upload Button -->
+                <button 
+                    type="button" 
+                    id="photo-btn"
+                    title="Kirim Foto"
+                    class="p-2.5 rounded-full bg-white/5 hover:bg-blue-500/20 border border-white/10 hover:border-blue-500/40 text-gray-300 hover:text-blue-400 transition-all shrink-0 cursor-pointer"
+                >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                </button>
+
+                <!-- Text Input -->
+                <input 
+                    type="text" 
+                    id="msg-input" 
+                    placeholder="Ketik pesan..." 
+                    autocomplete="off"
+                    class="flex-1 px-4 py-2.5 bg-white/[0.06] border border-white/10 rounded-full text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all"
+                >
+
+                <!-- Send Button -->
+                <button 
+                    type="submit" 
+                    id="send-btn"
+                    class="p-2.5 sm:px-5 sm:py-2.5 rounded-full pill-btn-blue text-white font-medium text-sm flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                    <span class="hidden sm:inline">Kirim</span>
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+
+        </div>
+    </main>
+
+    <!-- Bottom Floating Navbar -->
+    <nav class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-sm">
+        <div class="flex items-center justify-around px-2 py-2 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/15 shadow-[0_10px_35px_rgba(0,0,0,0.9)]">
+            
+            <!-- Home Link -->
+            <a href="home.html" class="nav-item group flex items-center gap-2 px-4 py-2 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/15 transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="text-xs sm:text-sm font-medium">Home</span>
+            </a>
+
+            <!-- Chating Link (Active with Blue Glow) -->
+            <a href="chating.html" class="nav-item active group flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.9)] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span class="text-xs sm:text-sm font-semibold text-white">Chating</span>
+            </a>
+
+            <!-- Tools Link -->
+            <a href="tools.html" class="nav-item group flex items-center gap-2 px-4 py-2 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/15 transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span class="text-xs sm:text-sm font-medium">Tools</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- Image Lightbox Modal -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <button id="lightbox-close" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <img id="lightbox-img" src="" alt="Full Preview" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border border-white/10 object-contain">
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. Animated White Dots Canvas Background
+        // ==========================================
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const particleCount = 70;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 1.8 + 0.6;
+                this.alpha = Math.random() * 0.55 + 0.2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 110) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.07 * (1 - dist / 110)})`;
+                        ctx.lineWidth = 0.6;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+        resizeCanvas();
+        initParticles();
+        animateParticles();
+
+        // ==========================================
+        // 2. Chat Application Logic
+        // ==========================================
+        const chatMessagesEl = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const msgInput = document.getElementById('msg-input');
+        const photoBtn = document.getElementById('photo-btn');
+        const photoInput = document.getElementById('photo-input');
+
+        const imagePreviewBar = document.getElementById('image-preview-bar');
+        const imagePreviewThumb = document.getElementById('image-preview-thumb');
+        const imagePreviewName = document.getElementById('image-preview-name');
+        const cancelImageBtn = document.getElementById('cancel-image-btn');
+
+        const replyPreviewBar = document.getElementById('reply-preview-bar');
+        const replyPreviewSender = document.getElementById('reply-preview-sender');
+        const replyPreviewText = document.getElementById('reply-preview-text');
+        const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+
+        const lightboxModal = document.getElementById('lightbox-modal');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        let pendingImage = null;
+        let activeReply = null;
+
+        // Initial Demo Messages
+        let messages = [
+            {
+                id: 'msg-1',
+                sender: 'other',
+                name: 'Alex',
+                text: 'Halo! Coba geser pesan ini ke kanan buat reply ya 👋',
+                image: null,
+                replyTo: null,
+                time: '15:50'
+            },
+            {
+                id: 'msg-2',
+                sender: 'me',
+                name: 'Kamu',
+                text: 'Siap! Kalau pesan sendiri gesernya ke kiri buat reply, persis kayak WA.',
+                image: null,
+                replyTo: 'msg-1',
+                time: '15:51'
+            }
+        ];
+
+        function getTimeNow() {
+            const now = new Date();
+            return now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function setReply(msg) {
+            activeReply = msg;
+            replyPreviewSender.textContent = `Membalas ${msg.name}`;
+            replyPreviewText.textContent = msg.text ? msg.text : '📷 Foto';
+            replyPreviewBar.classList.remove('hidden');
+            msgInput.focus();
+        }
+
+        function clearReply() {
+            activeReply = null;
+            replyPreviewBar.classList.add('hidden');
+        }
+
+        cancelReplyBtn.addEventListener('click', clearReply);
+
+        // Photo Upload Handling
+        photoBtn.addEventListener('click', () => photoInput.click());
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                pendingImage = ev.target.result;
+                imagePreviewThumb.src = pendingImage;
+                imagePreviewName.textContent = file.name;
+                imagePreviewBar.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        cancelImageBtn.addEventListener('click', () => {
+            pendingImage = null;
+            photoInput.value = '';
+            imagePreviewBar.classList.add('hidden');
+        });
+
+        // Lightbox
+        function openLightbox(src) {
+            lightboxImg.src = src;
+            lightboxModal.classList.remove('hidden');
+        }
+        lightboxClose.addEventListener('click', () => lightboxModal.classList.add('hidden'));
+        lightboxModal.addEventListener('click', (e) => {
+            if (e.target === lightboxModal) lightboxModal.classList.add('hidden');
+        });
+
+        // Scroll to & highlight original message
+        function scrollToMessage(msgId) {
+            const target = document.getElementById(msgId);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const bubble = target.querySelector('.bubble-box');
+            if (bubble) {
+                bubble.classList.remove('highlight-msg');
+                void bubble.offsetWidth; // trigger reflow
+                bubble.classList.add('highlight-msg');
+            }
+        }
+
+        // Render a single message
+        function createMessageElement(msg) {
+            const isMe = msg.sender === 'me';
+
+            const wrapper = document.createElement('div');
+            wrapper.id = msg.id;
+            wrapper.className = `msg-wrapper flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-msg`;
+
+            // Swipe Reply Icon (Left for other, Right for me)
+            const replyIcon = document.createElement('div');
+            replyIcon.className = `swipe-reply-icon ${isMe ? 'right-3' : 'left-3'} w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-400 flex items-center justify-center`;
+            replyIcon.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>`;
+            wrapper.appendChild(replyIcon);
+
+            // Bubble Container (the part that slides)
+            const container = document.createElement('div');
+            container.className = `msg-bubble-container group flex items-end gap-2 max-w-[82%] sm:max-w-[72%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`;
+
+            // Bubble Box
+            const bubble = document.createElement('div');
+            bubble.className = `bubble-box relative px-3.5 py-2.5 rounded-2xl text-sm shadow-lg ${
+                isMe 
+                    ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-sm border border-blue-400/30' 
+                    : 'bg-white/[0.08] backdrop-blur-md text-gray-100 rounded-bl-sm border border-white/10'
+            }`;
+
+            // Sender Name (for others)
+            if (!isMe) {
+                const nameEl = document.createElement('p');
+                nameEl.className = 'text-[11px] font-semibold text-blue-400 mb-1';
+                nameEl.textContent = msg.name;
+                bubble.appendChild(nameEl);
+            }
+
+            // Quoted Reply Box
+            if (msg.replyTo) {
+                const orig = messages.find(m => m.id === msg.replyTo);
+                if (orig) {
+                    const quoteBox = document.createElement('div');
+                    quoteBox.className = `mb-2 px-2.5 py-1.5 rounded-xl text-xs cursor-pointer border-l-2 ${
+                        isMe ? 'bg-black/25 border-blue-200 text-blue-100' : 'bg-black/40 border-blue-400 text-gray-300'
+                    }`;
+                    quoteBox.innerHTML = `
+                        <p class="font-semibold text-[11px] ${isMe ? 'text-blue-200' : 'text-blue-400'}">${orig.name}</p>
+                        <p class="truncate opacity-85">${orig.text ? orig.text : '📷 Foto'}</p>
+                    `;
+                    quoteBox.addEventListener('click', () => scrollToMessage(orig.id));
+                    bubble.appendChild(quoteBox);
+                }
+            }
+
+            // Image Content
+            if (msg.image) {
+                const imgEl = document.createElement('img');
+                imgEl.src = msg.image;
+                imgEl.alt = 'Sent photo';
+                imgEl.className = 'w-full max-w-[240px] max-h-60 object-cover rounded-xl mb-1.5 cursor-pointer border border-white/10 hover:opacity-90 transition-opacity';
+                imgEl.addEventListener('click', () => openLightbox(msg.image));
+                bubble.appendChild(imgEl);
+            }
+
+            // Text Content
+            if (msg.text) {
+                const textEl = document.createElement('p');
+                textEl.className = 'leading-relaxed break-words whitespace-pre-wrap';
+                textEl.textContent = msg.text;
+                bubble.appendChild(textEl);
+            }
+
+            // Timestamp
+            const timeEl = document.createElement('span');
+            timeEl.className = `block text-[10px] mt-1 text-right ${isMe ? 'text-blue-200/80' : 'text-gray-400'}`;
+            timeEl.textContent = msg.time;
+            bubble.appendChild(timeEl);
+
+            // Desktop Hover Reply Button
+            const desktopReplyBtn = document.createElement('button');
+            desktopReplyBtn.type = 'button';
+            desktopReplyBtn.title = 'Balas pesan';
+            desktopReplyBtn.className = 'opacity-0 group-hover:opacity-100 p-1.5 rounded-full bg-white/10 hover:bg-blue-500/30 text-gray-300 hover:text-white transition-all cursor-pointer shrink-0';
+            desktopReplyBtn.innerHTML = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>`;
+            desktopReplyBtn.addEventListener('click', () => setReply(msg));
+
+            container.appendChild(bubble);
+            container.appendChild(desktopReplyBtn);
+            wrapper.appendChild(container);
+
+            // ==========================================
+            // Swipe-to-Reply Gesture (WhatsApp Style)
+            // Own message (right) -> Swipe LEFT
+            // Other message (left) -> Swipe RIGHT
+            // ==========================================
+            let startX = 0;
+            let startY = 0;
+            let currentX = 0;
+            let isDragging = false;
+            const threshold = 55;
+
+            function onStart(clientX, clientY) {
+                startX = clientX;
+                startY = clientY;
+                currentX = 0;
+                isDragging = true;
+                container.classList.add('swiping');
+            }
+
+            function onMove(clientX, clientY) {
+                if (!isDragging) return;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                // Cancel if scrolling vertically
+                if (Math.abs(dy) > Math.abs(dx) && Math.abs(dx) < 10) {
+                    isDragging = false;
+                    container.classList.remove('swiping');
+                    container.style.transform = 'translateX(0px)';
+                    return;
+                }
+
+                // Restrict direction: Me -> only negative (left), Other -> only positive (right)
+                if (isMe && dx < 0) {
+                    currentX = Math.max(dx, -85);
+                } else if (!isMe && dx > 0) {
+                    currentX = Math.min(dx, 85);
+                } else {
+                    currentX = 0;
+                }
+
+                container.style.transform = `translateX(${currentX}px)`;
+                if (Math.abs(currentX) >= threshold) {
+                    replyIcon.classList.add('visible');
+                } else {
+                    replyIcon.classList.remove('visible');
+                }
+            }
+
+            function onEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                container.classList.remove('swiping');
+                container.style.transform = 'translateX(0px)';
+                replyIcon.classList.remove('visible');
+
+                if (Math.abs(currentX) >= threshold) {
+                    if (navigator.vibrate) navigator.vibrate(25);
+                    setReply(msg);
+                }
+                currentX = 0;
+            }
+
+            // Touch Events
+            wrapper.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+            wrapper.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+            wrapper.addEventListener('touchend', onEnd);
+
+            // Mouse Events (for testing swipe on PC)
+            wrapper.addEventListener('mousedown', (e) => onStart(e.clientX, e.clientY));
+            window.addEventListener('mousemove', (e) => { if (isDragging) onMove(e.clientX, e.clientY); });
+            window.addEventListener('mouseup', () => { if (isDragging) onEnd(); });
+
+            return wrapper;
+        }
+
+        function renderAllMessages() {
+            chatMessagesEl.innerHTML = '';
+            messages.forEach(msg => {
+                chatMessagesEl.appendChild(createMessageElement(msg));
+            });
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+
+        // Send Message
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            if (!text && !pendingImage) return;
+
+            const newMsg = {
+                id: 'msg-' + Date.now(),
+                sender: 'me',
+                name: 'Kamu',
+                text: text,
+                image: pendingImage,
+                replyTo: activeReply ? activeReply.id : null,
+                time: getTimeNow()
+            };
+
+            messages.push(newMsg);
+            chatMessagesEl.appendChild(createMessageElement(newMsg));
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+
+            // Reset inputs
+            msgInput.value = '';
+            pendingImage = null;
+            photoInput.value = '';
+            imagePreviewBar.classList.add('hidden');
+            clearReply();
+        });
+
+        // Initial Render
+        renderAllMessages();
+    </script>
+</body>
+</html>
