@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PanSkip - Loading</title>
+    <title>PanSkip - Minimalist Link Bypasser</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #000000;
             color: #ffffff;
-            overflow: hidden;
+            overflow-x: hidden;
             margin: 0;
             padding: 0;
         }
 
-        /* Fullscreen Particle Canvas */
+        /* Animated Particle Canvas */
         #particle-canvas {
             position: fixed;
             top: 0;
@@ -31,34 +31,47 @@
             pointer-events: none;
         }
 
-        /* Glowing Blue Pill / Box Button */
+        /* Blue Pill Button with Transparent Glow */
         .pill-btn-blue {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .pill-btn-blue:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 0 38px rgba(59, 130, 246, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        .pill-btn-blue:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 32px rgba(59, 130, 246, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.35);
         }
 
-        .pill-btn-blue:active {
+        .pill-btn-blue:active:not(:disabled) {
             transform: translateY(0) scale(0.98);
         }
 
-        /* Progress Bar Glow */
-        .progress-glow {
-            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
-            box-shadow: 0 0 16px rgba(59, 130, 246, 0.8);
-            transition: width 0.15s ease-out;
+        .pill-btn-blue:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
-        /* Entrance & Morph Animations */
-        @keyframes fadeInScale {
+        /* Secondary Pill Button */
+        .pill-btn-glass {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            transition: all 0.25s ease;
+        }
+
+        .pill-btn-glass:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Entrance & Modal Animations */
+        @keyframes fadeSlideUp {
             from {
                 opacity: 0;
-                transform: translateY(15px) scale(0.95);
+                transform: translateY(20px) scale(0.98);
             }
             to {
                 opacity: 1;
@@ -66,101 +79,265 @@
             }
         }
 
-        @keyframes boxExpand {
-            0% {
-                opacity: 0;
-                transform: scale(0.6) translateY(12px);
-                border-radius: 9999px;
-            }
-            60% {
-                opacity: 1;
-                transform: scale(1.04) translateY(0);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                border-radius: 1.5rem;
-            }
-        }
-
         .animate-entrance {
-            animation: fadeInScale 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .animate-box-appear {
-            animation: boxExpand 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .fade-out-up {
-            opacity: 0 !important;
-            transform: translateY(-10px) scale(0.96);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        .spinner {
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Modal Transitions */
+        #notif-modal {
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        #notif-modal.modal-hidden {
+            opacity: 0;
+            visibility: hidden;
             pointer-events: none;
+        }
+        #notif-modal.modal-visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        #notif-card {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #notif-modal.modal-hidden #notif-card {
+            transform: scale(0.9) translateY(10px);
+        }
+        #notif-modal.modal-visible #notif-card {
+            transform: scale(1) translateY(0);
         }
     </style>
 </head>
-<body class="min-h-screen w-full flex items-center justify-center relative selection:bg-blue-500/30 selection:text-blue-200">
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-blue-500/30 selection:text-blue-200">
 
-    <!-- Fullscreen Animated White Dots Background -->
+    <!-- Animated White Dots Background -->
     <canvas id="particle-canvas"></canvas>
 
-    <!-- Center Content -->
-    <main class="relative z-10 w-full max-w-md px-6 flex flex-col items-center justify-center text-center">
-        
-        <!-- Brand Text (No Logo) -->
-        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-8 animate-entrance drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+    <!-- Top-Right Header: Logo + PanSkip -->
+    <header class="fixed top-4 right-4 sm:top-6 sm:right-8 z-30 flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+        <!-- Logo Image with SVG Fallback -->
+        <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-blue-500/20 border border-blue-400/30">
+            <img 
+                src="skip.png" 
+                alt="PanSkip Logo" 
+                class="w-full h-full object-cover"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            >
+            <div class="hidden w-full h-full items-center justify-center text-blue-400">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </div>
+        </div>
+        <span class="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]">
             Pan<span class="text-blue-400">Skip</span>
-        </h1>
+        </span>
+    </header>
 
-        <!-- Loading Section -->
-        <div id="loading-container" class="w-full animate-entrance" style="animation-delay: 0.1s;">
-            <!-- Percentage Display -->
-            <div class="flex items-center justify-between text-xs sm:text-sm font-medium text-gray-400 mb-2.5 px-1">
-                <span id="status-text">Memproses bypass...</span>
-                <span id="percent-text" class="text-blue-400 font-semibold tabular-nums">0%</span>
-            </div>
+    <!-- Main Centered Content -->
+    <main class="relative z-10 flex-1 flex items-center justify-center px-4 py-24 sm:py-28">
+        <div class="w-full max-w-lg animate-entrance">
+            <!-- Glassmorphic Card -->
+            <div class="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+                
+                <!-- Card Header -->
+                <div class="text-center mb-7">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 text-blue-400 mb-4 shadow-[0_0_20px_rgba(59,130,246,0.25)]">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Bypass Shortlinks</h1>
+                    <p class="text-sm text-gray-400 mt-1.5">Paste your Linkvertise or safelink URL below to skip instantly.</p>
+                </div>
 
-            <!-- Horizontal Loading Bar -->
-            <div class="w-full h-2.5 bg-white/10 rounded-full overflow-hidden border border-white/10 backdrop-blur-sm p-[1px]">
-                <div id="progress-bar" class="h-full w-0 rounded-full progress-glow"></div>
+                <!-- Bypass Form -->
+                <form id="bypass-form" class="space-y-5" novalidate>
+                    <div class="relative group">
+                        <!-- Left Link Icon -->
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </div>
+
+                        <input 
+                            type="url" 
+                            id="url-input" 
+                            placeholder="https://linkvertise.com/..." 
+                            autocomplete="off"
+                            class="w-full pl-11 pr-20 py-3.5 bg-black/60 border border-white/15 rounded-full text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all"
+                        >
+
+                        <!-- Right Action Buttons: Clear & Paste -->
+                        <div class="absolute inset-y-0 right-2 flex items-center gap-1">
+                            <button 
+                                type="button" 
+                                id="clear-btn" 
+                                title="Clear input"
+                                class="hidden p-1.5 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                            >
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            <button 
+                                type="button" 
+                                id="paste-btn" 
+                                title="Paste from clipboard"
+                                class="p-2 text-blue-400 hover:text-blue-300 rounded-full hover:bg-blue-500/15 transition-colors"
+                            >
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Pill Button -->
+                    <button 
+                        type="submit" 
+                        id="submit-btn"
+                        class="w-full py-3.5 px-6 rounded-full pill-btn-blue text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 cursor-pointer"
+                    >
+                        <span id="btn-text">Bypass Now</span>
+                        <svg id="btn-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <svg id="btn-spinner" class="hidden w-5 h-5 spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"></circle>
+                            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <!-- Result Container (Hidden by default) -->
+                <div id="result-box" class="hidden mt-6 pt-6 border-t border-white/10 animate-entrance">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-medium uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Bypassed Destination
+                        </span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-black/70 border border-blue-500/30 break-all text-xs sm:text-sm text-gray-200 font-mono mb-4" id="result-url-text">
+                        <!-- Result URL injected here -->
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button 
+                            type="button" 
+                            id="copy-btn"
+                            class="flex-1 py-2.5 px-4 rounded-full pill-btn-glass text-blue-300 text-xs sm:text-sm font-medium flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>Copy Link</span>
+                        </button>
+                        <a 
+                            id="open-btn" 
+                            href="#" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="flex-1 py-2.5 px-4 rounded-full pill-btn-blue text-white text-xs sm:text-sm font-medium flex items-center justify-center gap-2"
+                        >
+                            <span>Open Link</span>
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        <!-- Continue Box / Button (Appears after 100%) -->
-        <div id="continue-container" class="hidden w-full flex justify-center mt-2">
-            <div class="w-full bg-white/[0.04] backdrop-blur-xl border border-white/15 rounded-3xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.85)] animate-box-appear">
-                <p id="result-label" class="text-xs sm:text-sm text-gray-400 mb-4">Siap digunakan</p>
-                <a 
-                    id="continue-btn"
-                    href="#" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="w-full py-3.5 px-6 rounded-2xl pill-btn-blue text-white font-semibold text-sm sm:text-base flex items-center justify-center gap-2.5 cursor-pointer"
-                >
-                    <span>Lanjutkan</span>
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </a>
-            </div>
-        </div>
-
-        <!-- Error Box (Appears if API fails) -->
-        <div id="error-container" class="hidden w-full flex justify-center mt-2">
-            <div class="w-full bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-3xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.85)] animate-box-appear">
-                <p id="error-message" class="text-xs sm:text-sm text-red-300 mb-4">Gagal melakukan bypass URL.</p>
-                <button 
-                    onclick="location.reload()" 
-                    class="w-full py-3 px-6 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition cursor-pointer"
-                >
-                    Coba Lagi
-                </button>
-            </div>
-        </div>
-
     </main>
 
+    <!-- Bottom Floating Navbar -->
+    <nav class="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-sm">
+        <div class="flex items-center justify-around px-3 py-2.5 rounded-full bg-white/[0.06] backdrop-blur-xl border border-white/15 shadow-[0_10px_35px_rgba(0,0,0,0.9)]">
+            
+            <!-- Home Link -->
+            <a href="home.html" class="group flex items-center gap-2 px-4 py-2 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="text-xs sm:text-sm font-medium">Home</span>
+            </a>
+
+            <!-- Chating Link -->
+            <a href="chating.html" class="group flex items-center gap-2 px-4 py-2 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span class="text-xs sm:text-sm font-medium">Chating</span>
+            </a>
+
+            <!-- Tools Link -->
+            <a href="tools.html" class="group flex items-center gap-2 px-4 py-2 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 transition-all duration-200">
+                <svg class="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+                <span class="text-xs sm:text-sm font-medium">Tools</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <!-- Center Notification Modal -->
+    <div id="notif-modal" class="modal-hidden fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/75 backdrop-blur-sm">
+        <div id="notif-card" class="relative w-full max-w-sm bg-[#0b0f19] border border-white/15 rounded-3xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.9)] text-center">
+            <!-- Prominent X Close Button -->
+            <button 
+                type="button" 
+                id="notif-close-btn"
+                aria-label="Close notification"
+                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- Dynamic Icon -->
+            <div id="notif-icon-wrap" class="mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4">
+                <!-- Injected via JS -->
+            </div>
+
+            <h3 id="notif-title" class="text-lg font-bold text-white mb-1.5">Notification</h3>
+            <p id="notif-message" class="text-sm text-gray-300 leading-relaxed mb-5">Message goes here.</p>
+
+            <button 
+                type="button" 
+                id="notif-ok-btn"
+                class="px-8 py-2.5 rounded-full pill-btn-blue text-white text-sm font-semibold cursor-pointer"
+            >
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic & Particle Animation -->
     <script>
         // ==========================================
         // 1. Animated White Dots Canvas Background
@@ -216,6 +393,7 @@
                 particles[i].update();
                 particles[i].draw();
 
+                // Subtle connecting lines between nearby dots
                 for (let j = i + 1; j < particles.length; j++) {
                     const dx = particles[i].x - particles[j].x;
                     const dy = particles[i].y - particles[j].y;
@@ -238,38 +416,130 @@
             initParticles();
         });
 
+        window.onload = function () {
+            resizeCanvas();
+            initParticles();
+            animateParticles();
+        };
+
         // ==========================================
-        // 2. Scrape / Bypass API & Loading Logic
+        // 2. Center Notification Modal System
         // ==========================================
-        const progressBar = document.getElementById('progress-bar');
-        const percentText = document.getElementById('percent-text');
-        const loadingContainer = document.getElementById('loading-container');
-        const continueContainer = document.getElementById('continue-container');
-        const continueBtn = document.getElementById('continue-btn');
-        const resultLabel = document.getElementById('result-label');
-        const errorContainer = document.getElementById('error-container');
-        const errorMessage = document.getElementById('error-message');
+        const notifModal = document.getElementById('notif-modal');
+        const notifTitle = document.getElementById('notif-title');
+        const notifMessage = document.getElementById('notif-message');
+        const notifIconWrap = document.getElementById('notif-icon-wrap');
+        const notifCloseBtn = document.getElementById('notif-close-btn');
+        const notifOkBtn = document.getElementById('notif-ok-btn');
 
-        // Ambil parameter ?url= dari URL browser, atau gunakan default
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUrl = urlParams.get('url') || 'https://sub2unlock.me/sUUphoL';
+        function showNotification(type, title, message) {
+            notifTitle.textContent = title;
+            notifMessage.textContent = message;
 
-        async function startBypass() {
-            let progress = 0;
-            let isDone = false;
+            if (type === 'error') {
+                notifIconWrap.className = 'mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-red-500/15 border border-red-500/30 text-red-400';
+                notifIconWrap.innerHTML = `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            } else if (type === 'warning') {
+                notifIconWrap.className = 'mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-amber-500/15 border border-amber-500/30 text-amber-400';
+                notifIconWrap.innerHTML = `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+            } else {
+                notifIconWrap.className = 'mx-auto w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-blue-500/15 border border-blue-500/30 text-blue-400';
+                notifIconWrap.innerHTML = `<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            }
 
-            // Simulasi progress bar hingga 90% sambil menunggu API
-            const interval = setInterval(() => {
-                if (!isDone && progress < 90) {
-                    progress += Math.floor(Math.random() * 4) + 1;
-                    progress = Math.min(progress, 90);
-                    progressBar.style.width = `${progress}%`;
-                    percentText.textContent = `${progress}%`;
+            notifModal.classList.remove('modal-hidden');
+            notifModal.classList.add('modal-visible');
+        }
+
+        function closeNotification() {
+            notifModal.classList.remove('modal-visible');
+            notifModal.classList.add('modal-hidden');
+        }
+
+        notifCloseBtn.addEventListener('click', closeNotification);
+        notifOkBtn.addEventListener('click', closeNotification);
+        notifModal.addEventListener('click', (e) => {
+            if (e.target === notifModal) closeNotification();
+        });
+
+        // ==========================================
+        // 3. Form & API Bypass Logic
+        // ==========================================
+        const form = document.getElementById('bypass-form');
+        const urlInput = document.getElementById('url-input');
+        const clearBtn = document.getElementById('clear-btn');
+        const pasteBtn = document.getElementById('paste-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const btnSpinner = document.getElementById('btn-spinner');
+
+        const resultBox = document.getElementById('result-box');
+        const resultUrlText = document.getElementById('result-url-text');
+        const copyBtn = document.getElementById('copy-btn');
+        const openBtn = document.getElementById('open-btn');
+
+        // Toggle clear button visibility
+        urlInput.addEventListener('input', () => {
+            clearBtn.classList.toggle('hidden', urlInput.value.trim() === '');
+        });
+
+        clearBtn.addEventListener('click', () => {
+            urlInput.value = '';
+            clearBtn.classList.add('hidden');
+            urlInput.focus();
+        });
+
+        // Paste from clipboard
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    urlInput.value = text.trim();
+                    clearBtn.classList.remove('hidden');
                 }
-            }, 60);
+            } catch (err) {
+                showNotification('warning', 'Clipboard Access', 'Please paste the URL manually using Ctrl+V or long-press.');
+            }
+        });
+
+        // Set loading state
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.textContent = 'Bypassing...';
+                btnIcon.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+            } else {
+                btnText.textContent = 'Bypass Now';
+                btnIcon.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        // Form Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rawUrl = urlInput.value.trim();
+
+            if (!rawUrl) {
+                showNotification('warning', 'Empty Input', 'Please enter a valid shortlink URL first.');
+                return;
+            }
 
             try {
-                const apiUrl = `https://api.theresav.eu/api/bypass/sub2unlock?url=${encodeURIComponent(targetUrl)}`;
+                new URL(rawUrl);
+            } catch (_) {
+                showNotification('error', 'Invalid URL', 'The URL you entered is not valid. Make sure it starts with http:// or https://');
+                return;
+            }
+
+            setLoading(true);
+            resultBox.classList.add('hidden');
+
+            const apiUrl = `https://api.theresav.eu/api/bypass/sub2unlock?url=${encodeURIComponent(rawUrl)}`;
+
+            try {
                 const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
@@ -277,54 +547,42 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
                 const data = await response.json();
 
-                if (data.status && data.bypassed_urls && data.bypassed_urls.length > 0) {
-                    isDone = true;
-                    clearInterval(interval);
-
-                    // Selesaikan progress ke 100%
-                    progressBar.style.width = '100%';
-                    percentText.textContent = '100%';
-
-                    // Set link tujuan ke hasil bypass
-                    continueBtn.href = data.bypassed_urls[0];
-                    resultLabel.textContent = `Selesai dalam ${data.time_taken || 'sekejap'}`;
-
-                    setTimeout(() => {
-                        loadingContainer.classList.add('fade-out-up');
-                        setTimeout(() => {
-                            loadingContainer.classList.add('hidden');
-                            continueContainer.classList.remove('hidden');
-                        }, 380);
-                    }, 300);
+                if (data && data.status === true && data.bypassed_urls && data.bypassed_urls.length > 0) {
+                    const bypassedUrl = data.bypassed_urls[0];
+                    resultUrlText.textContent = bypassedUrl;
+                    openBtn.href = bypassedUrl;
+                    resultBox.classList.remove('hidden');
+                    showNotification('success', 'Bypass Successful', 'Your destination link is ready!');
                 } else {
-                    throw new Error('URL tidak ditemukan atau gagal di-bypass.');
+                    const errMsg = data.message || `Gagal bypass link (HTTP ${response.status})`;
+                    showNotification('error', 'Bypass Failed', errMsg);
                 }
             } catch (error) {
-                isDone = true;
-                clearInterval(interval);
-                console.error('Bypass error:', error);
-
-                loadingContainer.classList.add('fade-out-up');
-                setTimeout(() => {
-                    loadingContainer.classList.add('hidden');
-                    errorMessage.textContent = error.message || 'Terjadi kesalahan saat menghubungi server.';
-                    errorContainer.classList.remove('hidden');
-                }, 380);
+                showNotification('error', 'Connection Error', 'Gagal menghubungi API bypass. Pastikan koneksi aman atau cek apakah endpoint memblokir CORS browser.');
+            } finally {
+                setLoading(false);
             }
-        }
+        });
 
-        window.onload = function () {
-            resizeCanvas();
-            initParticles();
-            animateParticles();
-            startBypass();
-        };
+        // Copy Result Link (using execCommand for iframe compatibility)
+        copyBtn.addEventListener('click', () => {
+            const textToCopy = resultUrlText.textContent;
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showNotification('success', 'Copied!', 'The bypassed URL has been copied to your clipboard.');
+            } catch (err) {
+                showNotification('error', 'Copy Failed', 'Could not copy the link automatically.');
+            }
+            document.body.removeChild(textarea);
+        });
     </script>
 </body>
 </html>
